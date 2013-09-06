@@ -32,6 +32,7 @@ import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.BorderFactory;
 import javax.swing.JSeparator;
+import javax.swing.border.BevelBorder;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
@@ -39,9 +40,10 @@ import java.beans.PropertyChangeEvent;
 import org.gladstoneinstitutes.customgraphicsui.internal.util.EasyGBC;
 
 public class GradientDialog extends JDialog {
+  final LinearPositionEditor gradientPositionEditor = new LinearPositionEditor();
   final GradientEditor editor = new GradientEditor();
   final ColorPanel colorPanel = new ColorPanel();
-  final PositionPanel positionPanel = new PositionPanel();
+  final PositionPanel anchorPositionPanel = new PositionPanel();
 
   public GradientDialog(final JFrame parent) {
     super(parent, "Gradient Custom Graphic", false);
@@ -50,7 +52,7 @@ public class GradientDialog extends JDialog {
       public void propertyChange(final PropertyChangeEvent e) {
         final Gradient.Stop selectedStop = editor.getSelectedStop();
         colorPanel.setColor(selectedStop == null ? null : selectedStop.getColor());
-        positionPanel.setPosition(selectedStop == null ? null : selectedStop.getPosition());
+        anchorPositionPanel.setPosition(selectedStop == null ? null : selectedStop.getPosition());
       }
     });
 
@@ -68,13 +70,13 @@ public class GradientDialog extends JDialog {
     editor.addPropertyChangeListener(editor.SELECTED_STOP_POSITION_CHANGED, new PropertyChangeListener() {
       public void propertyChange(final PropertyChangeEvent e) {
         final Gradient.Stop selectedStop = editor.getSelectedStop();
-        positionPanel.setPosition(selectedStop == null ? null : selectedStop.getPosition());
+        anchorPositionPanel.setPosition(selectedStop == null ? null : selectedStop.getPosition());
       }
     });
 
-    positionPanel.addPropertyChangeListener(PositionPanel.POSITION_CHANGED, new PropertyChangeListener() {
+    anchorPositionPanel.addPropertyChangeListener(PositionPanel.POSITION_CHANGED, new PropertyChangeListener() {
       public void propertyChange(final PropertyChangeEvent e) {
-        final float newPosition = (float) positionPanel.getPosition();
+        final float newPosition = (float) anchorPositionPanel.getPosition();
         final Gradient.Stop selectedStop = editor.getSelectedStop();
         if (selectedStop != null) {
           selectedStop.setPosition(newPosition);
@@ -87,11 +89,13 @@ public class GradientDialog extends JDialog {
     anchorPanel.setBorder(BorderFactory.createTitledBorder("Anchor"));
     final EasyGBC c = new EasyGBC();
     anchorPanel.add(colorPanel, c);
-    anchorPanel.add(positionPanel, c.anchor("w").down().insets(10, 0, 0, 0));
+    anchorPanel.add(anchorPositionPanel, c.anchor("w").down().insets(10, 0, 0, 0));
 
+    gradientPositionEditor.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
     super.setLayout(new GridBagLayout());
-    super.add(editor, c.reset().expandHV().insets(20, 10, 10, 10));
-    super.add(anchorPanel, c.insets(0, 17, 20, 17).noExpand().down());
+    super.add(gradientPositionEditor, c.reset().expand(0.5, 1.0).spanV(2).insets(20, 20, 20, 20));
+    super.add(editor, c.right().noSpan().expand(0.5, 1.0).insets(20, 10, 10, 10));
+    super.add(anchorPanel, c.insets(0, 17, 20, 17).noExpand().down().right());
   }	
 }
 

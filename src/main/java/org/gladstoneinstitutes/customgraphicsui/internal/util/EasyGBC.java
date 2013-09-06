@@ -49,6 +49,13 @@ public class EasyGBC extends GridBagConstraints {
 		return this;
 	}
 
+	public EasyGBC expand(double weightx, double weighty) {
+		super.weightx = weightx;
+		super.weighty = weighty;
+		fill = GridBagConstraints.BOTH;
+		return this;
+	}
+
 	public EasyGBC right() {
 		gridx++;
 		return this;
