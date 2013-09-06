@@ -91,7 +91,7 @@ public class GradientDialog extends JDialog {
     anchorPanel.add(colorPanel, c);
     anchorPanel.add(anchorPositionPanel, c.anchor("w").down().insets(10, 0, 0, 0));
 
-    gradientPositionEditor.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+    gradientPositionEditor.setBorder(BorderFactory.createLineBorder(new Color(0x858585), 1));
     super.setLayout(new GridBagLayout());
     super.add(gradientPositionEditor, c.reset().expand(0.5, 1.0).spanV(2).insets(20, 20, 20, 20));
     super.add(editor, c.right().noSpan().expand(0.5, 1.0).insets(20, 10, 10, 10));
@@ -278,8 +278,6 @@ class PositionPanel extends JPanel {
   final JSpinner relSpinner = createSpinner(new SpinnerNumberModel(0.0, 0.0, 1.0, 0.1));
 
   public PositionPanel() {
-    //super(new GridBagLayout());
-
     relSpinner.addChangeListener(new ChangeListener() {
       public void stateChanged(final ChangeEvent e) {
         final double relValue = ((Number) relSpinner.getValue()).doubleValue();
