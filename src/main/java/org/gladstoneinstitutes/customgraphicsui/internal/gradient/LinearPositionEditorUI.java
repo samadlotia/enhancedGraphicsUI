@@ -25,7 +25,7 @@ class LinearPositionEditorUI extends ComponentUI {
   protected static final Color  ANCHOR_COLOR      = new Color(0x424242);
   protected static final float  ANCHOR_RADIUS_PX  = 15.0f;
   protected static final Color  ARROW_COLOR       = new Color(0x424242);
-  protected static final float  ARROW_THICKNESS   = 7.5f;
+  protected static final float  ARROW_THICKNESS   = 6.0f;
   protected static final Stroke ARROW_STROKE      = new BasicStroke(ARROW_THICKNESS);
   protected static final float  SNAP_TOLERANCE    = 0.05f;
 
@@ -64,34 +64,35 @@ class LinearPositionEditorUI extends ComponentUI {
 
     final Path2D.Float arrowVee = newArrowVee(ARROW_THICKNESS);
     final Rectangle2D bounds = arrowVee.getBounds2D();
-
+    final float arrowVeeH = (float) bounds.getHeight();
     final LinearPosition position = editor.getLinearPosition();
+    final double arrowAngle = Math.atan2(position.y2 - position.y1, position.x2 - position.x1)/* - Math.PI / 2.0*/;
+
     arrow.setLine(position.x1 * box.width  + box.x,
                   position.y1 * box.height + box.y,
                   position.x2 * box.width  + box.x,
                   position.y2 * box.height + box.y);
+    final double arrowLength = Math.sqrt(Math.pow(arrow.x2 - arrow.x1, 2.0) + Math.pow(arrow.y2 - arrow.y1, 2.0)) - arrowVeeH;
+    arrow.setLine(arrow.x1, arrow.y1,
+      arrow.x1 + Math.cos(arrowAngle) * arrowLength,
+      arrow.y1 + Math.sin(arrowAngle) * arrowLength);
     g2d.setPaint(ARROW_COLOR);
     g2d.setStroke(ARROW_STROKE);
     g2d.draw(arrow);
 
-    final double arrowAngle = Math.atan2(position.y2 - position.y1, position.x2 - position.x1) - Math.PI / 2.0;
     transform.setToIdentity();
     transform.translate(arrow.x2, arrow.y2);
-    transform.rotate(arrowAngle);
+    transform.rotate(arrowAngle - Math.PI / 2.0);
     g2d.transform(transform);
-
-    transform.setToIdentity();
-    transform.translate(-bounds.getWidth() / 2.0, -bounds.getHeight());
-    arrowVee.transform(transform);
     g2d.fill(arrowVee);
   }
 
   private static Path2D.Float newArrowVee(final float t) {
     final Path2D.Float p = new Path2D.Float();
-    p.moveTo(0.0f, 0.0f);
-    p.lineTo(2.0f * t, 1.0f * t);
-    p.lineTo(4.0f * t, 0.0f);
-    p.lineTo(2.0f * t, 6.0f * t);
+    p.moveTo( 0.0f     , 1.0f * t);
+    p.lineTo( 2.0f * t , 0.0f);
+    p.lineTo(0.0f     , 6.0f * t);
+    p.lineTo(-2.0f * t, 0.0f);
     p.closePath();
     return p;
   }
