@@ -10,10 +10,9 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 
 public class CyActivator extends AbstractCyActivator {
-  public static CySwingApplication swingApp = null;
-
   private static Properties ezProps(String... vals) {
     final Properties props = new Properties();
     for (int i = 0; i < vals.length; i += 2)
@@ -22,9 +21,12 @@ public class CyActivator extends AbstractCyActivator {
   }
 
   public void start(BundleContext bc) {
-    swingApp = super.getService(bc, CySwingApplication.class);
+    final CySwingApplication swingApp = super.getService(bc, CySwingApplication.class);
+
+    final CustomGraphicsFactoryManager manager = new CustomGraphicsFactoryManager();
+    super.registerServiceListener(bc, manager, "addFactory", "removeFactory", CyCustomGraphicsFactory.class);
     
-    super.registerService(bc, new AddCustomGraphicNodeViewTaskFactory(), NodeViewTaskFactory.class, ezProps(
+    super.registerService(bc, new AddCustomGraphicNodeViewTaskFactory(swingApp, manager), NodeViewTaskFactory.class, ezProps(
       ServiceProperties.TITLE, "Add Custom Graphic",
       ServiceProperties.PREFERRED_MENU, ServiceProperties.APPS_MENU
       ));

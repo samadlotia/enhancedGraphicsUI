@@ -38,15 +38,22 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 
 import org.gladstoneinstitutes.customgraphicsui.internal.util.EasyGBC;
+import org.gladstoneinstitutes.customgraphicsui.internal.CustomGraphicsFactoryManager;
 
 public class GradientDialog extends JDialog {
-  final LinearPositionEditor gradientPositionEditor = new LinearPositionEditor();
-  final GradientEditor editor = new GradientEditor();
-  final ColorPanel colorPanel = new ColorPanel();
-  final PositionPanel anchorPositionPanel = new PositionPanel();
+  final CustomGraphicsFactoryManager manager;
+  final GradientEditor editor;
+  final LinearPositionEditor gradientPositionEditor;
+  final ColorPanel colorPanel;
+  final PositionPanel anchorPositionPanel;
 
-  public GradientDialog(final JFrame parent) {
-    super(parent, "Gradient Custom Graphic", false);
+  public GradientDialog(final JFrame parent, final CustomGraphicsFactoryManager manager) {
+    super(parent, "Linear Gradient Custom Graphic", false);
+    this.manager = manager;
+    this.editor = new GradientEditor();
+    this.gradientPositionEditor = new LinearPositionEditor(editor, manager);
+    this.colorPanel = new ColorPanel();
+    this.anchorPositionPanel = new PositionPanel();
 
     editor.addPropertyChangeListener(editor.SELECTED_STOP_CHANGED, new PropertyChangeListener() {
       public void propertyChange(final PropertyChangeEvent e) {
@@ -63,6 +70,7 @@ public class GradientDialog extends JDialog {
         if (selectedStop != null) {
           selectedStop.setColor(newColor);
           editor.repaint();
+          gradientPositionEditor.repaint();
         }
       }
     });
@@ -71,6 +79,7 @@ public class GradientDialog extends JDialog {
       public void propertyChange(final PropertyChangeEvent e) {
         final Gradient.Stop selectedStop = editor.getSelectedStop();
         anchorPositionPanel.setPosition(selectedStop == null ? null : selectedStop.getPosition());
+        gradientPositionEditor.repaint();
       }
     });
 
@@ -81,6 +90,7 @@ public class GradientDialog extends JDialog {
         if (selectedStop != null) {
           selectedStop.setPosition(newPosition);
           editor.repaint();
+          gradientPositionEditor.repaint();
         }
       }
     });
