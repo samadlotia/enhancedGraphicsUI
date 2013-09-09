@@ -7,11 +7,20 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 
+import org.gladstoneinstitutes.customgraphicsui.internal.CustomGraphicsFactoryManager;
+
 class LinearPositionEditor extends JComponent {
-  final LinearPositionEditorUI ui = new LinearPositionEditorUI(this);
+  public static final String POSITION_CHANGED = "position changed";
+  final GradientEditor gradientEditor;
+  final CustomGraphicsFactoryManager manager;
+  final LinearPositionEditorUI ui;
+
   LinearPosition position = new LinearPosition();
 
-  public LinearPositionEditor() {
+  public LinearPositionEditor(final GradientEditor gradientEditor, final CustomGraphicsFactoryManager manager) {
+    this.gradientEditor = gradientEditor;
+    this.manager = manager;
+    this.ui = new LinearPositionEditorUI(this, gradientEditor, manager.getFactory("lingrad"));
     super.setUI(ui);
     super.setPreferredSize(new Dimension(400, 400));
     final PositionUpdater positionUpdater = new PositionUpdater();
@@ -39,6 +48,7 @@ class LinearPositionEditor extends JComponent {
       ui.mouseToRel(end, e.getX(), e.getY());
       position.setLine(start.x, start.y, end.x, end.y);
       repaint();
+      firePropertyChange(POSITION_CHANGED, null, null);
     }
 
     public void mouseMoved(MouseEvent e) {}

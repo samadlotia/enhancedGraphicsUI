@@ -7,12 +7,21 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.application.swing.CySwingApplication;
 
 import org.gladstoneinstitutes.customgraphicsui.internal.gradient.GradientDialog;
 
 class AddCustomGraphicNodeViewTaskFactory implements NodeViewTaskFactory {
+  final CySwingApplication swingApp;
+  final CustomGraphicsFactoryManager manager;
+
+  public AddCustomGraphicNodeViewTaskFactory(final CySwingApplication swingApp, final CustomGraphicsFactoryManager manager) {
+    this.swingApp = swingApp;
+    this.manager = manager;
+  }
+
   public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView networkView) {
-    return new TaskIterator(new AddCustomGraphicTask());
+    return new TaskIterator(new AddCustomGraphicTask(swingApp, manager));
   }
 
   public boolean isReady(View<CyNode> nodeView, CyNetworkView networkView) {
@@ -21,8 +30,16 @@ class AddCustomGraphicNodeViewTaskFactory implements NodeViewTaskFactory {
 }
 
 class AddCustomGraphicTask implements Task {
+  final CySwingApplication swingApp;
+  final CustomGraphicsFactoryManager manager;
+
+  public AddCustomGraphicTask(final CySwingApplication swingApp, final CustomGraphicsFactoryManager manager) {
+    this.swingApp = swingApp;
+    this.manager = manager;
+  }
+
   public void run(TaskMonitor monitor) {
-    final GradientDialog d = new GradientDialog(CyActivator.swingApp.getJFrame());
+    final GradientDialog d = new GradientDialog(swingApp.getJFrame(), manager);
     d.pack();
     d.setVisible(true);
   }
