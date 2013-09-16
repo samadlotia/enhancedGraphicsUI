@@ -10,7 +10,7 @@ import java.awt.geom.Point2D;
 
 import org.gladstoneinstitutes.customgraphicsui.internal.CustomGraphicsFactoryManager;
 
-class LinearPositionEditor extends JComponent {
+class PositionEditor extends JComponent {
   public static final String POSITION_CHANGED = "position changed";
 
   static final float ANCHOR_TOLERANCE = 0.05f;
@@ -19,14 +19,14 @@ class LinearPositionEditor extends JComponent {
 
   final GradientEditor gradientEditor;
   final CustomGraphicsFactoryManager manager;
-  final LinearPositionEditorUI ui;
+  final PositionEditorUI ui;
 
   LinearPosition position = new LinearPosition();
 
-  public LinearPositionEditor(final GradientEditor gradientEditor, final CustomGraphicsFactoryManager manager) {
+  public PositionEditor(final GradientEditor gradientEditor, final CustomGraphicsFactoryManager manager) {
     this.gradientEditor = gradientEditor;
     this.manager = manager;
-    this.ui = new LinearPositionEditorUI(this, gradientEditor, manager.getFactory("lingrad"));
+    this.ui = new PositionEditorUI(this, gradientEditor, manager.getFactory("lingrad"));
     super.setUI(ui);
     super.setPreferredSize(new Dimension(400, 400));
     final PositionUpdater positionUpdater = new PositionUpdater();

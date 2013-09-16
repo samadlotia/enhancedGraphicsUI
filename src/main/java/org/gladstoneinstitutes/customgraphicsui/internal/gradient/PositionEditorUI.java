@@ -22,7 +22,7 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
-class LinearPositionEditorUI extends ComponentUI {
+class PositionEditorUI extends ComponentUI {
   static final Paint        BKGND_PAINT           = GradientEditorUI.checkeredPaint();
   static final float        BOX_FRACTION_SIZE     = 0.5f;
   static final Color        BOX_BORDER_COLOR      = new Color(0x8A8A8A);
@@ -37,12 +37,12 @@ class LinearPositionEditorUI extends ComponentUI {
   static final Rectangle2D  ARROW_VEE_BOUNDS      = ARROW_VEE.getBounds2D();
   static final float        ARROW_VEE_H           = (float) ARROW_VEE_BOUNDS.getHeight();
 
-  final LinearPositionEditor editor;
+  final PositionEditor editor;
   final GradientEditor gradientEditor;
   final CyCustomGraphicsFactory<? extends CustomGraphicLayer> factory;
 
-  public LinearPositionEditorUI(
-    final LinearPositionEditor editor,
+  public PositionEditorUI(
+    final PositionEditor editor,
     final GradientEditor gradientEditor,
     final CyCustomGraphicsFactory<? extends CustomGraphicLayer> factory) {
     this.editor = editor;

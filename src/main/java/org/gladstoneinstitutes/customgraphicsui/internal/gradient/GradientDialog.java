@@ -43,7 +43,7 @@ import org.gladstoneinstitutes.customgraphicsui.internal.CustomGraphicsFactoryMa
 public class GradientDialog extends JDialog {
   final CustomGraphicsFactoryManager manager;
   final GradientEditor editor;
-  final LinearPositionEditor gradientPositionEditor;
+  final PositionEditor gradientPositionEditor;
   final ColorPanel colorPanel;
   final PositionPanel anchorPositionPanel;
 
@@ -51,7 +51,7 @@ public class GradientDialog extends JDialog {
     super(parent, "Linear Gradient Custom Graphic", false);
     this.manager = manager;
     this.editor = new GradientEditor();
-    this.gradientPositionEditor = new LinearPositionEditor(editor, manager);
+    this.gradientPositionEditor = new PositionEditor(editor, manager);
     this.colorPanel = new ColorPanel();
     this.anchorPositionPanel = new PositionPanel();
 
