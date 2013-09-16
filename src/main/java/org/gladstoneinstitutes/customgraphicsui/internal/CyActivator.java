@@ -30,5 +30,6 @@ public class CyActivator extends AbstractCyActivator {
       ServiceProperties.TITLE, "Add Custom Graphic",
       ServiceProperties.PREFERRED_MENU, ServiceProperties.APPS_MENU
       ));
+    System.out.println((new java.util.Date()).toString() + "  enhancedGraphicsUI started");
   }
 }

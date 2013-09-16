@@ -23,19 +23,19 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
 class LinearPositionEditorUI extends ComponentUI {
-  protected static final Paint        BKGND_PAINT       = GradientEditorUI.checkeredPaint();
-  protected static final float        BOX_FRACTION_SIZE = 0.5f;
-  protected static final Color        BOX_BORDER_COLOR  = new Color(0x8A8A8A);
-  protected static final Stroke       BOX_BORDER_STROKE = new BasicStroke(3.5f);
-  protected static final Color        ANCHOR_COLOR      = new Color(/*0x424242*/ 0x8A8A8A);
-  protected static final float        ANCHOR_RADIUS_PX  = 15.0f;
-  protected static final Color        ARROW_COLOR       = new Color(/*0x424242*/ 0x8A8A8A);
-  protected static final float        ARROW_THICKNESS   = 6.0f;
-  protected static final Stroke       ARROW_STROKE      = new BasicStroke(ARROW_THICKNESS);
-  protected static final float        SNAP_TOLERANCE    = 0.05f;
-  protected static final Path2D.Float ARROW_VEE         = newArrowVee(ARROW_THICKNESS);
-  protected static final Rectangle2D  ARROW_VEE_BOUNDS  = ARROW_VEE.getBounds2D();
-  protected static final float        ARROW_VEE_H       = (float) ARROW_VEE_BOUNDS.getHeight();
+  static final Paint        BKGND_PAINT           = GradientEditorUI.checkeredPaint();
+  static final float        BOX_FRACTION_SIZE     = 0.5f;
+  static final Color        BOX_BORDER_COLOR      = new Color(0x8A8A8A);
+  static final float        BOX_BORDER_THICKNESS  = 2.5f;
+  static final Stroke       BOX_BORDER_STROKE     = new BasicStroke(BOX_BORDER_THICKNESS);
+  static final Color        ARROW_COLOR           = new Color(/*0x424242*/ 0x8A8A8A);
+  static final float        ARROW_THICKNESS       = 4.0f;
+  static final Stroke       ARROW_STROKE          = new BasicStroke(ARROW_THICKNESS);
+  static final float        ANCHOR_SIZE           = 8.0f;
+  static final float        SNAP_TOLERANCE        = 0.05f;
+  static final Path2D.Float ARROW_VEE             = newArrowVee(ARROW_THICKNESS);
+  static final Rectangle2D  ARROW_VEE_BOUNDS      = ARROW_VEE.getBounds2D();
+  static final float        ARROW_VEE_H           = (float) ARROW_VEE_BOUNDS.getHeight();
 
   final LinearPositionEditor editor;
   final GradientEditor gradientEditor;
@@ -53,7 +53,7 @@ class LinearPositionEditorUI extends ComponentUI {
   // These are class members to avoid unnecessary heap allocations everytime paint() is invoked.
   protected final Insets            insets    = new Insets(0, 0, 0, 0);
   protected final Rectangle2D.Float box       = new Rectangle2D.Float();
-  protected final Ellipse2D.Float   anchor    = new Ellipse2D.Float(0, 0, ANCHOR_RADIUS_PX, ANCHOR_RADIUS_PX);
+  protected final Rectangle2D.Float anchor    = new Rectangle2D.Float();
   protected final Line2D.Float      arrowStem = new Line2D.Float();
   protected final AffineTransform   transform = new AffineTransform();
 
@@ -63,6 +63,7 @@ class LinearPositionEditorUI extends ComponentUI {
     final Graphics2D g2d = (Graphics2D) g;
     g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
+    // paint the background -- only shows if the gradient is transparent
     g2d.setPaint(BKGND_PAINT);
     g2d.fill(box);
 
@@ -78,21 +79,10 @@ class LinearPositionEditorUI extends ComponentUI {
       } catch (Exception e) {}
     }
 
-
     // paint the box that's the border around the gradient
     g2d.setPaint(BOX_BORDER_COLOR);
     g2d.setStroke(BOX_BORDER_STROKE);
     g2d.draw(box);
-
-    // paint anchors for each corner of the box and its center
-    g2d.setPaint(ANCHOR_COLOR);
-    for (float anchorX = 0.0f; anchorX <= 1.0f; anchorX += 0.5f) {
-      for (float anchorY = 0.0f; anchorY <= 1.0f; anchorY += 0.5f) {
-        anchor.x = box.width  * anchorX + box.x - ANCHOR_RADIUS_PX / 2.0f;
-        anchor.y = box.height * anchorY + box.y - ANCHOR_RADIUS_PX / 2.0f;
-        g2d.fill(anchor);
-      }
-    }
 
     // calculate the arrow's beginning and end coordinates
     final LinearPosition position = editor.getLinearPosition();
@@ -114,12 +104,20 @@ class LinearPositionEditorUI extends ComponentUI {
     g2d.setStroke(ARROW_STROKE);
     g2d.draw(arrowStem);
 
+    anchor.setRect(arrowX1 - ANCHOR_SIZE / 2.0f, arrowY1 - ANCHOR_SIZE / 2.0f, ANCHOR_SIZE, ANCHOR_SIZE);
+    //g2d.setPaint(Color.WHITE);
+    g2d.fill(anchor);
+
+    anchor.setRect(arrowX2 - ANCHOR_SIZE / 2.0f, arrowY2 - ANCHOR_SIZE / 2.0f, ANCHOR_SIZE, ANCHOR_SIZE);
+    g2d.fill(anchor);
+
     // paint the arrow vee
     transform.setToTranslation(
       arrowX1 + Math.cos(arrowAngle) * arrowStemLength,
       arrowY1 + Math.sin(arrowAngle) * arrowStemLength);
     transform.rotate(arrowAngle - Math.PI / 2.0);
     g2d.transform(transform);
+    g2d.setPaint(ARROW_COLOR);
     g2d.fill(ARROW_VEE);
   }
 
@@ -133,10 +131,14 @@ class LinearPositionEditorUI extends ComponentUI {
     return p;
   }
 
-  public void mouseToRel(final Point2D.Float point, final int mouseX, int mouseY) {
+  public void mouseToRel(final Point2D.Float point, final int mouseX, int mouseY, boolean snapTolerance) {
     calculateBox();
     float relX = (mouseX - box.x) / box.width;
     float relY = (mouseY - box.y) / box.height;
+    if (!snapTolerance) {
+      point.setLocation(relX, relY);
+      return;
+    }
     for (float anchorX = 0.0f; anchorX <= 1.0f; anchorX += 0.5f) {
       if ((anchorX - SNAP_TOLERANCE) <= relX && relX <= (anchorX + SNAP_TOLERANCE)) {
         relX = anchorX;

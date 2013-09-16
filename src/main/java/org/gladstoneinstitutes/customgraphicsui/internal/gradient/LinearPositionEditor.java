@@ -2,6 +2,7 @@ package org.gladstoneinstitutes.customgraphicsui.internal.gradient;
 
 import javax.swing.JComponent;
 import java.awt.Dimension;
+import java.awt.Cursor;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -11,6 +12,11 @@ import org.gladstoneinstitutes.customgraphicsui.internal.CustomGraphicsFactoryMa
 
 class LinearPositionEditor extends JComponent {
   public static final String POSITION_CHANGED = "position changed";
+
+  static final float ANCHOR_TOLERANCE = 0.05f;
+  static final Cursor DEFAULT_CURSOR = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
+  static final Cursor HAND_CURSOR = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+
   final GradientEditor gradientEditor;
   final CustomGraphicsFactoryManager manager;
   final LinearPositionEditorUI ui;
@@ -37,20 +43,40 @@ class LinearPositionEditor extends JComponent {
   }
 
   class PositionUpdater extends MouseAdapter implements MouseMotionListener {
-    Point2D.Float start = new Point2D.Float();
-    Point2D.Float end = new Point2D.Float();
+    final Point2D.Float point = new Point2D.Float();
+    int state = 0;
 
-    public void mousePressed(MouseEvent e) {
-      ui.mouseToRel(start, e.getX(), e.getY());
-    }
+    public void mousePressed(MouseEvent e) {}
 
     public void mouseDragged(MouseEvent e) {
-      ui.mouseToRel(end, e.getX(), e.getY());
-      position.setLine(start.x, start.y, end.x, end.y);
+      if (state == 0)
+        return;
+      ui.mouseToRel(point, e.getX(), e.getY(), true);
+      if (state == 1) {
+        position.x1 = point.x;
+        position.y1 = point.y;
+      } else if (state == 2) {
+        position.x2 = point.x;
+        position.y2 = point.y;
+      }
       repaint();
       firePropertyChange(POSITION_CHANGED, null, null);
     }
 
-    public void mouseMoved(MouseEvent e) {}
+    public void mouseMoved(MouseEvent e) {
+      ui.mouseToRel(point, e.getX(), e.getY(), false);
+      if (position.x1 - ANCHOR_TOLERANCE <= point.x && point.x <= position.x1 + ANCHOR_TOLERANCE &&
+          position.y1 - ANCHOR_TOLERANCE <= point.y && point.y <= position.y1 + ANCHOR_TOLERANCE) {
+        state = 1;
+        setCursor(HAND_CURSOR);
+      } else if (position.x2 - ANCHOR_TOLERANCE <= point.x && point.x <= position.x2 + ANCHOR_TOLERANCE &&
+                 position.y2 - ANCHOR_TOLERANCE <= point.y && point.y <= position.y2 + ANCHOR_TOLERANCE) {
+        state = 2;
+        setCursor(HAND_CURSOR);
+      } else {
+        setCursor(DEFAULT_CURSOR);
+        state = 0;
+      }
+    }
   }
 }
