@@ -12,6 +12,7 @@ import java.awt.Graphics2D;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.FlowLayout;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -32,6 +33,7 @@ import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.BorderFactory;
 import javax.swing.JSeparator;
+import javax.swing.JComboBox;
 import javax.swing.border.BevelBorder;
 
 import java.beans.PropertyChangeListener;
@@ -48,7 +50,7 @@ public class GradientDialog extends JDialog {
   final PositionPanel anchorPositionPanel;
 
   public GradientDialog(final JFrame parent, final CustomGraphicsFactoryManager manager) {
-    super(parent, "Linear Gradient Custom Graphic", false);
+    super(parent, "Gradient Custom Graphic", false);
     this.manager = manager;
     this.editor = new GradientEditor();
     this.gradientPositionEditor = new PositionEditor(editor, manager);
@@ -95,6 +97,15 @@ public class GradientDialog extends JDialog {
       }
     });
 
+    final JComboBox gradientTypeComboBox = new JComboBox(PositionEditor.Type.values());
+    gradientTypeComboBox.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        final PositionEditor.Type type = (PositionEditor.Type) gradientTypeComboBox.getSelectedItem();
+        gradientPositionEditor.setType(type);
+      }
+    });
+    gradientTypeComboBox.setSelectedItem(gradientPositionEditor.getType());
+
     final JPanel anchorPanel = new JPanel(new GridBagLayout());
     anchorPanel.setBorder(BorderFactory.createTitledBorder("Anchor"));
     final EasyGBC c = new EasyGBC();
@@ -102,9 +113,15 @@ public class GradientDialog extends JDialog {
     anchorPanel.add(anchorPositionPanel, c.anchor("w").down().insets(10, 0, 0, 0));
 
     gradientPositionEditor.setBorder(BorderFactory.createLineBorder(new Color(0x858585), 1));
+
+    final JPanel typePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    typePanel.add(new JLabel("Gradient Type: "));
+    typePanel.add(gradientTypeComboBox);
+
     super.setLayout(new GridBagLayout());
-    super.add(gradientPositionEditor, c.reset().expand(0.5, 1.0).spanV(2).insets(20, 20, 20, 20));
-    super.add(editor, c.right().noSpan().expand(0.5, 1.0).insets(20, 10, 10, 10));
+    super.add(typePanel, c.reset().expandH().spanH(2).insets(10, 20, 0, 0));
+    super.add(gradientPositionEditor, c.down().expand(0.5, 1.0).spanV(2).insets(10, 20, 20, 20));
+    super.add(editor, c.right().noSpan().expand(0.5, 1.0).insets(10, 10, 10, 10));
     super.add(anchorPanel, c.insets(0, 17, 20, 17).noExpand().down().right());
   }	
 }
@@ -130,7 +147,7 @@ class ColorPanel extends JPanel {
     addChannelUpdates(fieldA, sliderA);
 
     final EasyGBC c = new EasyGBC();
-    super.add(new JLabel("Color:"), c.spanH(4).anchor("w"));
+    super.add(new JLabel("Color:"), c.spanH(4).anchor("w").insets(10, 10, 0, 0));
     super.add(well, c.down().spanV(4).anchor("nw").insets(10, 10, 10, 10));
     super.add(new JLabel("R:"), c.noSpan().right().insets(10, 0, 0, 10));
     super.add(sliderR, c.right());

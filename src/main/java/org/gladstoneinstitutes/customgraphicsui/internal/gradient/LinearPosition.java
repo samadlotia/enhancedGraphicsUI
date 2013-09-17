@@ -40,7 +40,15 @@ public class LinearPosition extends Line2D.Float {
     return pos;
   }
 
-  public String toString() {
-    return String.format("start=\"%f,%f\" end=\"%f,%f\"", x1, y1, x2, y2);
+  public String formatCg(final PositionEditor.Type type) {
+    switch (type) {
+      case LINEAR:
+        return String.format("start=\"%f,%f\" end=\"%f,%f\"", x1, y1, x2, y2);
+      case RADIAL:
+        final float r = (float) Math.sqrt(Math.pow(x2 - x1, 2.0) + Math.pow(y2 - y1, 2.0));
+        return String.format("center=\"%f,%f\" radius=\"%f\"", x1, y1, r);
+      default:
+        throw new IllegalArgumentException("Unknown type");
+    }
   }
 }

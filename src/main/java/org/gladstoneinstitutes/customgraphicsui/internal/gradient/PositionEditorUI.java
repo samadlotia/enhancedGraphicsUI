@@ -39,14 +39,16 @@ class PositionEditorUI extends ComponentUI {
 
   final PositionEditor editor;
   final GradientEditor gradientEditor;
-  final CyCustomGraphicsFactory<? extends CustomGraphicLayer> factory;
+  CyCustomGraphicsFactory<? extends CustomGraphicLayer> factory = null;
 
   public PositionEditorUI(
     final PositionEditor editor,
-    final GradientEditor gradientEditor,
-    final CyCustomGraphicsFactory<? extends CustomGraphicLayer> factory) {
+    final GradientEditor gradientEditor) {
     this.editor = editor;
     this.gradientEditor = gradientEditor;
+  }
+
+  public void setFactory(final CyCustomGraphicsFactory<? extends CustomGraphicLayer> factory) {
     this.factory = factory;
   }
 
@@ -71,8 +73,8 @@ class PositionEditorUI extends ComponentUI {
     if (factory != null) {
       final Gradient gradient = gradientEditor.getGradient();
       try {
-        final CyCustomGraphics<? extends CustomGraphicLayer> customGraphics
-          = factory.getInstance(String.format("%s stoplist=\"%s\"", editor.getLinearPosition().toString(), gradient.toString()));
+        final String cgDescription = String.format("%s stoplist=\"%s\"", editor.getLinearPosition().formatCg(editor.getType()), gradient.toString());
+        final CyCustomGraphics<? extends CustomGraphicLayer> customGraphics = factory.getInstance(cgDescription);
         final CustomGraphicLayer layer = customGraphics.getLayers(null, null).get(0);
         g2d.setPaint(layer.getPaint(box));
         g2d.fill(box);
@@ -105,7 +107,6 @@ class PositionEditorUI extends ComponentUI {
     g2d.draw(arrowStem);
 
     anchor.setRect(arrowX1 - ANCHOR_SIZE / 2.0f, arrowY1 - ANCHOR_SIZE / 2.0f, ANCHOR_SIZE, ANCHOR_SIZE);
-    //g2d.setPaint(Color.WHITE);
     g2d.fill(anchor);
 
     anchor.setRect(arrowX2 - ANCHOR_SIZE / 2.0f, arrowY2 - ANCHOR_SIZE / 2.0f, ANCHOR_SIZE, ANCHOR_SIZE);

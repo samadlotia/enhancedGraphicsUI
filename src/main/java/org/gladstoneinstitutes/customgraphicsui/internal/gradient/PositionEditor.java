@@ -13,6 +13,27 @@ import org.gladstoneinstitutes.customgraphicsui.internal.CustomGraphicsFactoryMa
 class PositionEditor extends JComponent {
   public static final String POSITION_CHANGED = "position changed";
 
+  public static enum Type {
+    RADIAL("Radial", "radgrad"),
+    LINEAR("Linear", "lingrad");
+
+    final String name;
+    final String cgName;
+
+    Type(final String name, final String cgName) {
+      this.name = name;
+      this.cgName = cgName;
+    }
+
+    public String toString() {
+      return name;
+    }
+
+    public String getCgName() {
+      return cgName;
+    }
+  }
+
   static final float ANCHOR_TOLERANCE = 0.05f;
   static final Cursor DEFAULT_CURSOR = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
   static final Cursor HAND_CURSOR = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
@@ -22,16 +43,29 @@ class PositionEditor extends JComponent {
   final PositionEditorUI ui;
 
   LinearPosition position = new LinearPosition();
+  Type type;
 
   public PositionEditor(final GradientEditor gradientEditor, final CustomGraphicsFactoryManager manager) {
     this.gradientEditor = gradientEditor;
     this.manager = manager;
-    this.ui = new PositionEditorUI(this, gradientEditor, manager.getFactory("lingrad"));
+    this.ui = new PositionEditorUI(this, gradientEditor);
     super.setUI(ui);
     super.setPreferredSize(new Dimension(400, 400));
     final PositionUpdater positionUpdater = new PositionUpdater();
     super.addMouseListener(positionUpdater);
     super.addMouseMotionListener(positionUpdater);
+
+    setType(Type.LINEAR);
+  }
+
+  public void setType(Type type) {
+    ui.setFactory(manager.getFactory(type.getCgName()));
+    this.type = type;
+    repaint();
+  }
+
+  public Type getType() {
+    return type;
   }
 
   public void setLinearPosition(LinearPosition position) {
