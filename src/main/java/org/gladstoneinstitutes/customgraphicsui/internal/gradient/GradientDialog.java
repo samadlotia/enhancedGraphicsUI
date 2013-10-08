@@ -45,17 +45,17 @@ import org.gladstoneinstitutes.customgraphicsui.internal.CustomGraphicsFactoryMa
 public class GradientDialog extends JDialog {
   final CustomGraphicsFactoryManager manager;
   final GradientEditor editor;
-  final PositionEditor gradientPositionEditor;
+  final GradientOrientationEditor gradientPositionEditor;
   final ColorPanel colorPanel;
-  final PositionPanel anchorPositionPanel;
+  final AnchorPositionPanel anchorPositionPanel;
 
   public GradientDialog(final JFrame parent, final CustomGraphicsFactoryManager manager) {
     super(parent, "Gradient Custom Graphic", false);
     this.manager = manager;
     this.editor = new GradientEditor();
-    this.gradientPositionEditor = new PositionEditor(editor, manager);
+    this.gradientPositionEditor = new GradientOrientationEditor(editor, manager);
     this.colorPanel = new ColorPanel();
-    this.anchorPositionPanel = new PositionPanel();
+    this.anchorPositionPanel = new AnchorPositionPanel();
 
     editor.addPropertyChangeListener(editor.SELECTED_STOP_CHANGED, new PropertyChangeListener() {
       public void propertyChange(final PropertyChangeEvent e) {
@@ -85,7 +85,7 @@ public class GradientDialog extends JDialog {
       }
     });
 
-    anchorPositionPanel.addPropertyChangeListener(PositionPanel.POSITION_CHANGED, new PropertyChangeListener() {
+    anchorPositionPanel.addPropertyChangeListener(AnchorPositionPanel.ANCHOR_POSITION_CHANGED, new PropertyChangeListener() {
       public void propertyChange(final PropertyChangeEvent e) {
         final float newPosition = (float) anchorPositionPanel.getPosition();
         final Gradient.Stop selectedStop = editor.getSelectedStop();
@@ -97,14 +97,15 @@ public class GradientDialog extends JDialog {
       }
     });
 
-    final JComboBox gradientTypeComboBox = new JComboBox(PositionEditor.Type.values());
+    final JComboBox gradientTypeComboBox = new JComboBox(GradientOrientation.Type.values());
     gradientTypeComboBox.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        final PositionEditor.Type type = (PositionEditor.Type) gradientTypeComboBox.getSelectedItem();
-        gradientPositionEditor.setType(type);
+        final GradientOrientation.Type type = (GradientOrientation.Type) gradientTypeComboBox.getSelectedItem();
+        gradientPositionEditor.getGradientOrientation().setType(type);
+        gradientPositionEditor.repaint();
       }
     });
-    gradientTypeComboBox.setSelectedItem(gradientPositionEditor.getType());
+    gradientTypeComboBox.setSelectedItem(gradientPositionEditor.getGradientOrientation().getType());
 
     final JPanel anchorPanel = new JPanel(new GridBagLayout());
     anchorPanel.setBorder(BorderFactory.createTitledBorder("Anchor"));
@@ -299,20 +300,20 @@ class ColorWell extends JComponent {
   }
 }
 
-class PositionPanel extends JPanel {
-  public static final String POSITION_CHANGED = "position changed";
+class AnchorPositionPanel extends JPanel {
+  public static final String ANCHOR_POSITION_CHANGED = "position changed";
 
   final JSpinner relSpinner = createSpinner(new SpinnerNumberModel(0.0, 0.0, 1.0, 0.1));
 
-  public PositionPanel() {
+  public AnchorPositionPanel() {
     relSpinner.addChangeListener(new ChangeListener() {
       public void stateChanged(final ChangeEvent e) {
         final double relValue = ((Number) relSpinner.getValue()).doubleValue();
-        firePropertyChange(POSITION_CHANGED, null, null);
+        firePropertyChange(ANCHOR_POSITION_CHANGED, null, null);
       }
     });
 
-    super.add(new JLabel("Position:"));
+    super.add(new JLabel("Anchor Position:"));
     super.add(relSpinner);
   }
 

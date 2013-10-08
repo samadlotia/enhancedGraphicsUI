@@ -22,7 +22,9 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
-class PositionEditorUI extends ComponentUI {
+import org.gladstoneinstitutes.customgraphicsui.internal.CustomGraphicsFactoryManager;
+
+class GradientOrientationEditorUI extends ComponentUI {
   static final Paint        BKGND_PAINT           = GradientEditorUI.checkeredPaint();
   static final float        BOX_FRACTION_SIZE     = 0.5f;
   static final Color        BOX_BORDER_COLOR      = new Color(0x8A8A8A);
@@ -37,19 +39,17 @@ class PositionEditorUI extends ComponentUI {
   static final Rectangle2D  ARROW_VEE_BOUNDS      = ARROW_VEE.getBounds2D();
   static final float        ARROW_VEE_H           = (float) ARROW_VEE_BOUNDS.getHeight();
 
-  final PositionEditor editor;
+  final GradientOrientationEditor editor;
   final GradientEditor gradientEditor;
-  CyCustomGraphicsFactory<? extends CustomGraphicLayer> factory = null;
+  final CustomGraphicsFactoryManager cgMgr;
 
-  public PositionEditorUI(
-    final PositionEditor editor,
-    final GradientEditor gradientEditor) {
+  public GradientOrientationEditorUI(
+    final GradientOrientationEditor editor,
+    final GradientEditor gradientEditor,
+    final CustomGraphicsFactoryManager cgMgr) {
     this.editor = editor;
     this.gradientEditor = gradientEditor;
-  }
-
-  public void setFactory(final CyCustomGraphicsFactory<? extends CustomGraphicLayer> factory) {
-    this.factory = factory;
+    this.cgMgr = cgMgr;
   }
 
   // These are class members to avoid unnecessary heap allocations everytime paint() is invoked.
@@ -60,26 +60,27 @@ class PositionEditorUI extends ComponentUI {
   protected final AffineTransform   transform = new AffineTransform();
 
   public void paint(Graphics g, final JComponent component) {
+    final GradientOrientation orientation = editor.getGradientOrientation();
+
     calculateBox();
 
     final Graphics2D g2d = (Graphics2D) g;
     g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-    // paint the background -- only shows if the gradient is transparent
+    // paint the background -- only is apparent if the gradient is transparent
     g2d.setPaint(BKGND_PAINT);
     g2d.fill(box);
 
-    // paint the gradient
-    if (factory != null) {
+    // paint the gradient -- catch when custom graphic fails when the custom graphics description string is invalid
+    try {
+      final CyCustomGraphicsFactory<? extends CustomGraphicLayer> factory = cgMgr.getFactory(orientation.getType().getCgName());
       final Gradient gradient = gradientEditor.getGradient();
-      try {
-        final String cgDescription = String.format("%s stoplist=\"%s\"", editor.getLinearPosition().formatCg(editor.getType()), gradient.toString());
-        final CyCustomGraphics<? extends CustomGraphicLayer> customGraphics = factory.getInstance(cgDescription);
-        final CustomGraphicLayer layer = customGraphics.getLayers(null, null).get(0);
-        g2d.setPaint(layer.getPaint(box));
-        g2d.fill(box);
-      } catch (Exception e) {}
-    }
+      final String cgDescription = String.format("%s stoplist=\"%s\"", orientation.toString(), gradient.toString());
+      final CyCustomGraphics<? extends CustomGraphicLayer> customGraphics = factory.getInstance(cgDescription);
+      final CustomGraphicLayer layer = customGraphics.getLayers(null, null).get(0);
+      g2d.setPaint(layer.getPaint(box));
+      g2d.fill(box);
+    } catch (Exception e) {}
 
     // paint the box that's the border around the gradient
     g2d.setPaint(BOX_BORDER_COLOR);
@@ -87,16 +88,15 @@ class PositionEditorUI extends ComponentUI {
     g2d.draw(box);
 
     // calculate the arrow's beginning and end coordinates
-    final LinearPosition position = editor.getLinearPosition();
-    final float  arrowX1         = position.x1 * box.width  + box.x;
-    final float  arrowY1         = position.y1 * box.height + box.y;
-    final float  arrowX2         = position.x2 * box.width  + box.x;
-    final float  arrowY2         = position.y2 * box.height + box.y;
+    final float  arrowX1         = orientation.x1 * box.width  + box.x;
+    final float  arrowY1         = orientation.y1 * box.height + box.y;
+    final float  arrowX2         = orientation.x2 * box.width  + box.x;
+    final float  arrowY2         = orientation.y2 * box.height + box.y;
 
     // get the arrow's polar coordinates so we can adjust the line length
     final double arrowStemLength = Math.sqrt(Math.pow(arrowX2 - arrowX1, 2.0)
                                            + Math.pow(arrowY2 - arrowY1, 2.0)) - ARROW_VEE_H; // subtract the arrow vee length
-    final double arrowAngle      = Math.atan2(position.y2 - position.y1, position.x2 - position.x1);
+    final double arrowAngle      = Math.atan2(orientation.y2 - orientation.y1, orientation.x2 - orientation.x1);
 
     // paint the arrow stem
     arrowStem.setLine(arrowX1, arrowY1,

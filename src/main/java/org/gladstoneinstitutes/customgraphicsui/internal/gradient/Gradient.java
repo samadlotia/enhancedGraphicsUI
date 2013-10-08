@@ -6,6 +6,15 @@ import java.util.List;
 import java.util.Collections;
 import java.util.ArrayList;
 
+/**
+ * Data structure representing a color gradient.
+ *
+ * A color gradient is an ordered list of stops, where a stop
+ * denotes color and position, where position is always between 0 and 1.
+ * Stops are ordered by position.
+ *
+ * This data structure requires there to be at least two stops.
+ */
 public class Gradient {
   public class Stop implements Comparable<Stop> {
     protected float position;
@@ -24,6 +33,13 @@ public class Gradient {
       this.color = color;
     }
 
+    /**
+     * Parses a string representing a stop.
+     * The acceptable format is comma-separated list of 5 numbers:
+     *   R,G,B,A,P
+     * where R, G, B, and A are integers between 0 and 255 denoting the stop's color channels,
+     * and P is a float between 0 and 1 denoting the stop's position.
+     */
     public Stop(final String str) {
       final String[] pieces = str.trim().split(",");
       if (pieces.length != 5)
@@ -85,12 +101,19 @@ public class Gradient {
     this(Color.BLUE, Color.BLACK, Color.YELLOW);
   }
 
+  /**
+   * Duplicate the given gradient.
+   */
   public Gradient(Gradient that) {
     for (Stop stop : that.getStops())
       this.add(stop);
     Collections.sort(stops);
   }
 
+  /**
+   * Creates a gradient of equally positioned colors.
+   * There must be at least two colors.
+   */
   public Gradient(Color ... colors) {
     final int n = colors.length;
     if (n < 2)
@@ -99,6 +122,13 @@ public class Gradient {
       this.add(i / ((float) (n - 1)), colors[i]);
   }
 
+  /**
+   * Parses a string that represents a gradient.
+   * This takes this format:
+   *   stop1|stop2|stop3 ...
+   * Where stopI follows the format for stops defined by Stop(String).
+   * There must be at least two stops.
+   */
   public Gradient(final String str) {
     final String[] pieces = str.trim().split("|");
     if (pieces.length < 2)
