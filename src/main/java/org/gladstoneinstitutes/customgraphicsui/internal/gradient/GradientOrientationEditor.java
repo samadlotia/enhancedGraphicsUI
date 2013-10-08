@@ -28,7 +28,7 @@ class GradientOrientationEditor extends JComponent {
     this.manager = manager;
     this.ui = new GradientOrientationEditorUI(this, gradientEditor, manager);
     super.setUI(ui);
-    super.setPreferredSize(new Dimension(400, 400));
+    super.setPreferredSize(new Dimension(300, 300));
     final MouseUpdater updater = new MouseUpdater();
     super.addMouseListener(updater);
     super.addMouseMotionListener(updater);

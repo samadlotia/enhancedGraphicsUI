@@ -9,7 +9,6 @@ import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.application.swing.CySwingApplication;
 
-import org.gladstoneinstitutes.customgraphicsui.internal.gradient.GradientDialog;
 
 class AddCustomGraphicNodeViewTaskFactory implements NodeViewTaskFactory {
   final CySwingApplication swingApp;
@@ -39,7 +38,7 @@ class AddCustomGraphicTask implements Task {
   }
 
   public void run(TaskMonitor monitor) {
-    final GradientDialog d = new GradientDialog(swingApp.getJFrame(), manager);
+    final MainDialog d = new MainDialog(swingApp.getJFrame(), manager);
     d.pack();
     d.setVisible(true);
   }

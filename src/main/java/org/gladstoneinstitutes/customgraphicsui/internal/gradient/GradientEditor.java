@@ -75,7 +75,7 @@ public class GradientEditor extends JComponent {
       }
     });
 
-    super.setPreferredSize(new Dimension(300, 75));
+    super.setPreferredSize(new Dimension(200, 50));
   }
 
   Gradient gradient = new Gradient();

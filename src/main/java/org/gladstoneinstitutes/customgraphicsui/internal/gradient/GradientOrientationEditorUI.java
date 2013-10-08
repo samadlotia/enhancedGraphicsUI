@@ -26,7 +26,7 @@ import org.gladstoneinstitutes.customgraphicsui.internal.CustomGraphicsFactoryMa
 
 class GradientOrientationEditorUI extends ComponentUI {
   static final Paint        BKGND_PAINT           = GradientEditorUI.checkeredPaint();
-  static final float        BOX_FRACTION_SIZE     = 0.5f;
+  static final float        BOX_FRACTION_SIZE     = 0.7f;
   static final Color        BOX_BORDER_COLOR      = new Color(0x8A8A8A);
   static final float        BOX_BORDER_THICKNESS  = 2.5f;
   static final Stroke       BOX_BORDER_STROKE     = new BasicStroke(BOX_BORDER_THICKNESS);

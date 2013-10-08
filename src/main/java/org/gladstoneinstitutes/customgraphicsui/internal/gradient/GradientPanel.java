@@ -22,11 +22,9 @@ import java.awt.event.FocusEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 
-import javax.swing.JFrame;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JDialog;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.JSpinner;
@@ -42,15 +40,14 @@ import java.beans.PropertyChangeEvent;
 import org.gladstoneinstitutes.customgraphicsui.internal.util.EasyGBC;
 import org.gladstoneinstitutes.customgraphicsui.internal.CustomGraphicsFactoryManager;
 
-public class GradientDialog extends JDialog {
+public class GradientPanel extends JPanel {
   final CustomGraphicsFactoryManager manager;
   final GradientEditor editor;
   final GradientOrientationEditor gradientPositionEditor;
   final ColorPanel colorPanel;
   final AnchorPositionPanel anchorPositionPanel;
 
-  public GradientDialog(final JFrame parent, final CustomGraphicsFactoryManager manager) {
-    super(parent, "Gradient Custom Graphic", false);
+  public GradientPanel(final CustomGraphicsFactoryManager manager) {
     this.manager = manager;
     this.editor = new GradientEditor();
     this.gradientPositionEditor = new GradientOrientationEditor(editor, manager);
@@ -108,7 +105,6 @@ public class GradientDialog extends JDialog {
     gradientTypeComboBox.setSelectedItem(gradientPositionEditor.getGradientOrientation().getType());
 
     final JPanel anchorPanel = new JPanel(new GridBagLayout());
-    anchorPanel.setBorder(BorderFactory.createTitledBorder("Anchor"));
     final EasyGBC c = new EasyGBC();
     anchorPanel.add(colorPanel, c);
     anchorPanel.add(anchorPositionPanel, c.anchor("w").down().insets(10, 0, 0, 0));
