@@ -134,6 +134,7 @@ class AttributesTable extends JTable {
 
       final DefaultTableModel model = (DefaultTableModel) getModel();
       model.moveRow(sourceRow, sourceRow, targetRow);
+      AttributesTable.this.setRowSelectionInterval(targetRow, targetRow);
       return true;
     }
   }
