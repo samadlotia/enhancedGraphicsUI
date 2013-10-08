@@ -4,6 +4,7 @@ import java.awt.Frame;
 import javax.swing.JDialog;
 import javax.swing.JTabbedPane;
 
+import org.gladstoneinstitutes.customgraphicsui.internal.chart.ChartPanel;
 import org.gladstoneinstitutes.customgraphicsui.internal.gradient.GradientPanel;
 
 public class MainDialog extends JDialog {
@@ -11,6 +12,7 @@ public class MainDialog extends JDialog {
     super(parent, "Enhanced Graphics", false);
 
     final JTabbedPane pane = new JTabbedPane();
+    pane.addTab("Chart", new ChartPanel());
     pane.addTab("Gradient", new GradientPanel(manager));
     super.add(pane);
   }

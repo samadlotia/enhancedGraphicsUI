@@ -14,6 +14,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 
 import java.awt.Component;
 import java.awt.GridBagLayout;
@@ -26,24 +27,10 @@ import java.util.EventObject;
 
 import org.gladstoneinstitutes.customgraphicsui.internal.util.EasyGBC;
 
-class AttributesPanel extends JPanel {
-  public static void main(String[] args) {
-    javax.swing.SwingUtilities.invokeLater(new Runnable() {
-      public void run() {
-        final javax.swing.JFrame frame = new javax.swing.JFrame("Attributes");
-        final AttributesPanel panel = new AttributesPanel();
-        frame.add(panel);
-        frame.pack();
-        frame.setVisible(true);
-      }
-    });
-  }
+class AttributesTable extends JTable {
 
-  final DefaultTableModel model;
-  final JTable table;
-
-  public AttributesPanel() {
-    model = new InternalTableModel();
+  protected static TableModel newTableModel() {
+    final DefaultTableModel model = new InternalTableModel();
     model.addColumn("");
     model.addColumn("Attribute");
     model.addColumn("Type");
@@ -51,27 +38,25 @@ class AttributesPanel extends JPanel {
     model.addRow(new Object[] { Boolean.FALSE, "a", "Float" });
     model.addRow(new Object[] { Boolean.FALSE, "b", "List of Strings" });
     model.addRow(new Object[] { Boolean.FALSE, "c", "Double" });
+    return model;
+  }
 
-    table = new JTable(model);
+  public AttributesTable() {
+    super(newTableModel());
     
-    final TableColumn activeCol = table.getColumnModel().getColumn(0);
+    final TableColumn activeCol = super.getColumnModel().getColumn(0);
     activeCol.setCellRenderer(new BooleanCellHandler());
     activeCol.setCellEditor(new BooleanCellHandler());
     activeCol.setMaxWidth(35);
     activeCol.setMinWidth(35);
 
-    table.setDragEnabled(true);
-    table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    table.setDropMode(DropMode.INSERT_ROWS);
-    table.setTransferHandler(new InternalTransferHandler());
-
-    super.setLayout(new GridBagLayout());
-    final EasyGBC c = new EasyGBC();
-    
-    super.add(new JScrollPane(table), c.expandHV());
+    super.setDragEnabled(true);
+    super.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    super.setDropMode(DropMode.INSERT_ROWS);
+    super.setTransferHandler(new InternalTransferHandler());
   }
 
-  class InternalTableModel extends DefaultTableModel {
+  static class InternalTableModel extends DefaultTableModel {
     public boolean isCellEditable(int row, int column) {
       switch (column) {
         case 0:
@@ -86,7 +71,7 @@ class AttributesPanel extends JPanel {
     final JCheckBox checkBox = new JCheckBox();
 
     public BooleanCellHandler() {
-      checkBox.setBackground(table.getBackground());
+      checkBox.setBackground(AttributesTable.super.getBackground());
     }
    
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -114,7 +99,7 @@ class AttributesPanel extends JPanel {
     }
 
     public Transferable createTransferable(JComponent c) {
-      return new StringSelection(Integer.toString(table.getSelectedRow()));
+      return new StringSelection(Integer.toString(AttributesTable.this.getSelectedRow()));
     }
 
     private Integer getRowIndexFromStringData(final TransferHandler.TransferSupport support) {
@@ -124,7 +109,7 @@ class AttributesPanel extends JPanel {
           continue;
         try {
           final Integer rowIndex = Integer.parseInt((String) transferable.getTransferData(flavor));
-          if (0 <= rowIndex && rowIndex < table.getRowCount())
+          if (0 <= rowIndex && rowIndex < AttributesTable.this.getRowCount())
             return rowIndex;
         } catch (Exception e) {}
       }
@@ -146,6 +131,8 @@ class AttributesPanel extends JPanel {
         targetRow = 0;
       if (sourceRow < targetRow)
         targetRow -= 1;
+
+      final DefaultTableModel model = (DefaultTableModel) getModel();
       model.moveRow(sourceRow, sourceRow, targetRow);
       return true;
     }
