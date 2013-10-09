@@ -2,6 +2,7 @@ package org.gladstoneinstitutes.customgraphicsui.internal.chart;
 
 import java.awt.GridBagLayout;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 import org.gladstoneinstitutes.customgraphicsui.internal.util.EasyGBC;
 
@@ -13,6 +14,6 @@ public class ChartPanel extends JPanel {
     attrsTable = new AttributesTable();
 
     final EasyGBC c = new EasyGBC();
-    super.add(attrsTable, c.expandHV());
+    super.add(new JScrollPane(attrsTable), c.expandHV());
   }
 }

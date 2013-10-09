@@ -32,6 +32,8 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.BorderFactory;
 import javax.swing.JSeparator;
 import javax.swing.JComboBox;
+import javax.swing.JRadioButton;
+import javax.swing.ButtonGroup;
 import javax.swing.border.BevelBorder;
 
 import java.beans.PropertyChangeListener;
@@ -94,16 +96,6 @@ public class GradientPanel extends JPanel {
       }
     });
 
-    final JComboBox gradientTypeComboBox = new JComboBox(GradientOrientation.Type.values());
-    gradientTypeComboBox.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        final GradientOrientation.Type type = (GradientOrientation.Type) gradientTypeComboBox.getSelectedItem();
-        gradientPositionEditor.getGradientOrientation().setType(type);
-        gradientPositionEditor.repaint();
-      }
-    });
-    gradientTypeComboBox.setSelectedItem(gradientPositionEditor.getGradientOrientation().getType());
-
     final JPanel anchorPanel = new JPanel(new GridBagLayout());
     final EasyGBC c = new EasyGBC();
     anchorPanel.add(colorPanel, c);
@@ -113,13 +105,26 @@ public class GradientPanel extends JPanel {
 
     final JPanel typePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
     typePanel.add(new JLabel("Gradient Type: "));
-    typePanel.add(gradientTypeComboBox);
+    final ButtonGroup typeGroup = new ButtonGroup();
+    for (final GradientOrientation.Type type : GradientOrientation.Type.values()) {
+      final JRadioButton typeButton = new JRadioButton(type.toString());
+      typePanel.add(typeButton);
+      typeGroup.add(typeButton);
+      typeButton.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          gradientPositionEditor.getGradientOrientation().setType(type);
+          gradientPositionEditor.repaint();
+        }
+      });
+      if (type == gradientPositionEditor.getGradientOrientation().getType())
+        typeButton.setSelected(true);
+    }
 
     super.setLayout(new GridBagLayout());
-    super.add(typePanel, c.reset().expandH().spanH(2).insets(10, 20, 0, 0));
-    super.add(gradientPositionEditor, c.down().expand(0.5, 1.0).spanV(2).insets(10, 20, 20, 20));
-    super.add(editor, c.right().noSpan().expand(0.5, 1.0).insets(10, 10, 10, 10));
-    super.add(anchorPanel, c.insets(0, 17, 20, 17).noExpand().down().right());
+    super.add(gradientPositionEditor, c.expand(0.5, 1.0).spanV(3).insets(10, 10, 10, 10));
+    super.add(typePanel, c.right().noSpan().expandH().insets(0, 0, 0, 0));
+    super.add(editor, c.down().right().expand(0.5, 1.0).insets(10, 0, 0, 10));
+    super.add(anchorPanel, c.noExpand().down().right().insets(10, 0, 0, 10));
   }	
 }
 
@@ -144,9 +149,8 @@ class ColorPanel extends JPanel {
     addChannelUpdates(fieldA, sliderA);
 
     final EasyGBC c = new EasyGBC();
-    super.add(new JLabel("Color:"), c.spanH(4).anchor("w").insets(10, 10, 0, 0));
-    super.add(well, c.down().spanV(4).anchor("nw").insets(10, 10, 10, 10));
-    super.add(new JLabel("R:"), c.noSpan().right().insets(10, 0, 0, 10));
+    super.add(well, c.down().spanV(4).anchor("nw").insets(0, 0, 0, 10));
+    super.add(new JLabel("R:"), c.noSpan().right().noInsets());
     super.add(sliderR, c.right());
     super.add(fieldR, c.right());
     super.add(new JLabel("G:"), c.down().right());
@@ -155,14 +159,14 @@ class ColorPanel extends JPanel {
     super.add(new JLabel("B:"), c.down().right());
     super.add(sliderB, c.right());
     super.add(fieldB, c.right());
-    super.add(new JLabel("A:"), c.down().right().insets(10, 0, 10, 10));
+    super.add(new JLabel("A:"), c.down().right());
     super.add(sliderA, c.right());
     super.add(fieldA, c.right());
 
   }
 
   private JTextField createColorField() {
-    final JTextField field = new JTextField(4);
+    final JTextField field = new JTextField(3);
     field.setEnabled(false);
     return field;
   }
