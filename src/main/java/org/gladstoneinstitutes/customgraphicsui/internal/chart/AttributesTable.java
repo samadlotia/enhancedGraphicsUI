@@ -16,6 +16,8 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
+import javax.swing.event.TableModelEvent;
+
 import java.awt.Component;
 import java.awt.GridBagLayout;
 
@@ -34,8 +36,7 @@ import org.cytoscape.model.CyColumn;
 import org.gladstoneinstitutes.customgraphicsui.internal.util.EasyGBC;
 
 class AttributesTable extends JTable {
-
-  AttributeTableModel model = new AttributeTableModel();
+  final AttributeTableModel model = new AttributeTableModel();
 
   public AttributesTable() {
     super.setModel(model);
@@ -56,23 +57,50 @@ class AttributesTable extends JTable {
     model.forCyTable(table);
   }
 
+  public Attributes getAttributes() {
+    return model.getAttributes();
+  }
+
   static class AttributeRow {
     public boolean enabled = false;
     public CyColumn attribute;
-    public String customName = "";
+    public String label;
   }
 
   static class AttributeTableModel extends AbstractTableModel {
     List<AttributeRow> rows = new ArrayList<AttributeRow>();
 
+    public Attributes getAttributes() {
+      int count = 0;
+      for (final AttributeRow row : rows) {
+        if (row.enabled) {
+          count++;
+        }
+      }
+
+      final String[] colNames = new String[count];
+      final String[] labels = new String[count];
+      int i = 0;
+      for (final AttributeRow row : rows) {
+        if (row.enabled) {
+          colNames[i] = row.attribute.getName();
+          labels[i] = row.label;
+          i++;
+        }
+      }
+      return new Attributes(colNames, labels);
+    }
+
     public void forCyTable(final CyTable table) {
       rows.clear();
       for (final CyColumn col : table.getColumns()) {
-        if (col.getType().getSuperclass() != Number.class)
+        final Class<?> type = col.getType();
+        if (type.getSuperclass() != Number.class)
           continue;
         final AttributeRow row = new AttributeRow();
         row.enabled = false;
         row.attribute = col;
+        row.label = col.getName();
         rows.add(row);
       }
       super.fireTableRowsInserted(0, rows.size() - 1);
@@ -97,7 +125,7 @@ class AttributesTable extends JTable {
       switch (col) {
         case 0: return "";
         case 1: return "Attribute";
-        case 2: return "Custom Name";
+        case 2: return "Label in Chart";
         default: return null;
       }
     }
@@ -115,7 +143,7 @@ class AttributesTable extends JTable {
       switch (col) {
         case 0: return attrRow.enabled;
         case 1: return attrRow.attribute.getName();
-        case 2: return attrRow.customName;
+        case 2: return attrRow.label;
         default: return null;
       }
     }
@@ -125,9 +153,11 @@ class AttributesTable extends JTable {
       switch (col) {
         case 0:
           attrRow.enabled = (Boolean) val;
+          super.fireTableChanged(new TableModelEvent(this, row, col));
           break;
         case 2:
-          attrRow.customName = (String) val;
+          attrRow.label = (String) val;
+          super.fireTableChanged(new TableModelEvent(this, row, col));
           break;
       }
     }
