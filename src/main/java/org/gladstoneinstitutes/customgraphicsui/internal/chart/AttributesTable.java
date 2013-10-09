@@ -10,7 +10,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.DropMode;
 import javax.swing.JComponent;
 
-import javax.swing.table.DefaultTableModel;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -24,25 +24,21 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.DataFlavor;
   
 import java.util.EventObject;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyColumn;
 
 import org.gladstoneinstitutes.customgraphicsui.internal.util.EasyGBC;
 
 class AttributesTable extends JTable {
 
-  protected static TableModel newTableModel() {
-    final DefaultTableModel model = new InternalTableModel();
-    model.addColumn("");
-    model.addColumn("Attribute");
-    model.addColumn("Type");
-
-    model.addRow(new Object[] { Boolean.FALSE, "a", "Float" });
-    model.addRow(new Object[] { Boolean.FALSE, "b", "List of Strings" });
-    model.addRow(new Object[] { Boolean.FALSE, "c", "Double" });
-    return model;
-  }
+  AttributeTableModel model = new AttributeTableModel();
 
   public AttributesTable() {
-    super(newTableModel());
+    super.setModel(model);
     
     final TableColumn activeCol = super.getColumnModel().getColumn(0);
     activeCol.setCellRenderer(new BooleanCellHandler());
@@ -56,14 +52,94 @@ class AttributesTable extends JTable {
     super.setTransferHandler(new InternalTransferHandler());
   }
 
-  static class InternalTableModel extends DefaultTableModel {
-    public boolean isCellEditable(int row, int column) {
-      switch (column) {
-        case 0:
-          return true;
-        default:
-          return false;
+  public void forCyTable(final CyTable table) {
+    model.forCyTable(table);
+  }
+
+  static class AttributeRow {
+    public boolean enabled = false;
+    public CyColumn attribute;
+    public String customName = "";
+  }
+
+  static class AttributeTableModel extends AbstractTableModel {
+    List<AttributeRow> rows = new ArrayList<AttributeRow>();
+
+    public void forCyTable(final CyTable table) {
+      rows.clear();
+      for (final CyColumn col : table.getColumns()) {
+        if (col.getType().getSuperclass() != Number.class)
+          continue;
+        final AttributeRow row = new AttributeRow();
+        row.enabled = false;
+        row.attribute = col;
+        rows.add(row);
       }
+      super.fireTableRowsInserted(0, rows.size() - 1);
+    }
+
+    public int getColumnCount() {
+      return 3;
+    }
+
+    public int getRowCount() {
+      return rows.size();
+    }
+
+    public Class<?> getColumnClass(int col) {
+      switch (col) {
+        case 0: return Boolean.class;
+        default: return String.class;
+      }
+    }
+
+    public String getColumnName(int col) {
+      switch (col) {
+        case 0: return "";
+        case 1: return "Attribute";
+        case 2: return "Custom Name";
+        default: return null;
+      }
+    }
+
+    public boolean isCellEditable(int row, int col) {
+      switch (col) {
+        case 0: 
+        case 2: return true;
+        default: return false;
+      }
+    }
+
+    public Object getValueAt(int row, int col) {
+      final AttributeRow attrRow = rows.get(row);
+      switch (col) {
+        case 0: return attrRow.enabled;
+        case 1: return attrRow.attribute.getName();
+        case 2: return attrRow.customName;
+        default: return null;
+      }
+    }
+
+    public void setValueAt(Object val, int row, int col) {
+      final AttributeRow attrRow = rows.get(row);
+      switch (col) {
+        case 0:
+          attrRow.enabled = (Boolean) val;
+          break;
+        case 2:
+          attrRow.customName = (String) val;
+          break;
+      }
+    }
+
+    public void move(int source, int target) {
+      final int shift = target - source;
+      if (shift < 0) {
+        Collections.rotate(rows.subList(target, source + 1), shift);
+      } else {
+        Collections.rotate(rows.subList(source, target + 1), shift);
+      }
+      super.fireTableDataChanged();
     }
   }
 
@@ -132,8 +208,7 @@ class AttributesTable extends JTable {
       if (sourceRow < targetRow)
         targetRow -= 1;
 
-      final DefaultTableModel model = (DefaultTableModel) getModel();
-      model.moveRow(sourceRow, sourceRow, targetRow);
+      model.move(sourceRow, targetRow);
       AttributesTable.this.setRowSelectionInterval(targetRow, targetRow);
       return true;
     }
