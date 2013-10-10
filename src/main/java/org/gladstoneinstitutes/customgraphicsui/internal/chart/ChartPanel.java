@@ -97,9 +97,9 @@ public class ChartPanel extends JPanel {
     typePanel.add(heatstripButton);
 
     final EasyGBC c = new EasyGBC();
-    super.add(preview, c.spanV(2).expand(0.5, 1.0));
-    super.add(typePanel, c.noSpan().right().expandH());
-    super.add(new JScrollPane(attrsTable), c.down().right().expand(0.5, 1.0).insets(0, 10, 0, 0));
+    super.add(preview, c.spanV(2).expand(0.5, 1.0).insets(10, 10, 10, 0));
+    super.add(typePanel, c.noSpan().right().expandH().insets(10, 10, 0, 0));
+    super.add(new JScrollPane(attrsTable), c.down().right().expand(0.5, 1.0).insets(0, 10, 10, 10));
   }
 
   public void setup(final CyNetworkView networkView, final View<CyNode> nodeView) {
@@ -109,7 +109,9 @@ public class ChartPanel extends JPanel {
   }
 
   class ChartPreview extends JComponent {
-    final Rectangle2D.Float box    = new Rectangle2D.Float();
+    // members so that these objects are not allocated every time paintComponent is called
+    final Rectangle2D.Float componentBounds = new Rectangle2D.Float();
+    final Rectangle2D.Float chartBounds     = new Rectangle2D.Float();
     final Insets            insets = new Insets(0, 0, 0, 0);
     final AffineTransform   at     = new AffineTransform();
 
@@ -121,16 +123,7 @@ public class ChartPanel extends JPanel {
       if (chart == null || networkView == null || nodeView == null)
         return;
 
-      super.getInsets(insets);
-      box.x = insets.left;
-      box.y = insets.top;
-      box.width = super.getWidth() - insets.left - insets.right;
-      box.height = super.getHeight() - insets.top - insets.bottom;
-      System.out.println("component box: " + box);
-
-      final Graphics2D g2d = (Graphics2D) g;
-      g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
+      // obtain the custom graphics
       final CyCustomGraphicsFactory<? extends CustomGraphicLayer> factory = cgMgr.getFactory(chart.getCgName());
       final String cgString = chart.buildCgString();
       if (cgString == null)
@@ -138,24 +131,36 @@ public class ChartPanel extends JPanel {
       final CyCustomGraphics<? extends CustomGraphicLayer> customGraphics = factory.getInstance(cgString);
       final float fit = customGraphics.getFitRatio();
 
-      final Rectangle2D.Double maxBounds = new Rectangle2D.Double();
+      // setup g2d
+      final Graphics2D g2d = (Graphics2D) g;
+      g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+      // calculate componentBounds -- the rect wherein the chart is painted
+      super.getInsets(insets);
+      componentBounds.setRect(insets.left, insets.top, super.getWidth() - insets.left - insets.right, super.getHeight() - insets.top - insets.bottom);
+
+      // calculate chartBounds -- the rect that's a union of each chart layer's shape boundaries
+      chartBounds.setRect(0.0, 0.0, 0.0, 0.0);
       for (CustomGraphicLayer layer : customGraphics.getLayers(networkView, nodeView)) {
         final PaintedShape ps = (PaintedShape) layer;
         final Shape shape = ps.getShape();
-        maxBounds.add(shape.getBounds2D());
+        chartBounds.add(shape.getBounds2D());
       }
 
+      // transform g2d such that chartBounds is scaled and translated to fit exactly in the middle of componentBounds
       final AffineTransform originalAt = g2d.getTransform();
       double factor;
-      if (maxBounds.width < maxBounds.height) {
-        factor = box.height / maxBounds.height;
+      if (componentBounds.height / componentBounds.width > chartBounds.height / chartBounds.width) {
+        factor = componentBounds.width / chartBounds.width;
       } else {
-        factor = box.width / maxBounds.width;
+        factor = componentBounds.height / chartBounds.height;
       }
-      g2d.translate(box.x, box.y);
+      factor *= fit;
+      g2d.translate(componentBounds.x + componentBounds.width / 2.0, componentBounds.y + componentBounds.height / 2.0);
       g2d.scale(factor, factor);
-      g2d.translate(-maxBounds.x, -maxBounds.y);
+      g2d.translate(-chartBounds.x - chartBounds.width / 2.0, -chartBounds.y - chartBounds.height / 2.0);
 
+      // paint each layer
       for (CustomGraphicLayer layer : customGraphics.getLayers(networkView, nodeView)) {
         final PaintedShape ps = (PaintedShape) layer;
         final Shape shape = ps.getShape();
@@ -171,6 +176,7 @@ public class ChartPanel extends JPanel {
         g2d.fill(shape);
       }
 
+      // reset the transform so that other things being painted with this g2d won't get messed up like component border
       g2d.setTransform(originalAt);
     }
   }
