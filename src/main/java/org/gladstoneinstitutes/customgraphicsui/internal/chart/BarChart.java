@@ -10,10 +10,10 @@ class BarChart extends Chart {
   }
 
   public String buildCgString() {
+    if (attrs == null)
+      return null;
     final StringBuffer buffer = new StringBuffer();
-    if (attrs != null) {
-      attrs.buildCgString(buffer);
-    }
+    attrs.buildCgString(buffer);
     return buffer.toString();
   }
 }

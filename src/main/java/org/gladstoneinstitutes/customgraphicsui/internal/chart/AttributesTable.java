@@ -20,6 +20,8 @@ import javax.swing.event.TableModelEvent;
 
 import java.awt.Component;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.StringSelection;
@@ -77,6 +79,9 @@ class AttributesTable extends JTable {
           count++;
         }
       }
+
+      if (count == 0)
+        return null;
 
       final String[] colNames = new String[count];
       final String[] labels = new String[count];
@@ -178,6 +183,12 @@ class AttributesTable extends JTable {
 
     public BooleanCellHandler() {
       checkBox.setBackground(AttributesTable.super.getBackground());
+      checkBox.setFocusPainted(false);
+      checkBox.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          fireEditingStopped();
+        }
+      });
     }
    
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {

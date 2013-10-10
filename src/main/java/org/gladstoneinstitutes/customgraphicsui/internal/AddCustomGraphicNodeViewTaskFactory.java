@@ -22,7 +22,7 @@ class AddCustomGraphicNodeViewTaskFactory implements NodeViewTaskFactory {
   }
 
   public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView networkView) {
-    return new TaskIterator(new AddCustomGraphicTask(swingApp, manager, networkView.getModel()));
+    return new TaskIterator(new AddCustomGraphicTask(swingApp, manager, networkView, nodeView));
   }
 
   public boolean isReady(View<CyNode> nodeView, CyNetworkView networkView) {
@@ -33,17 +33,19 @@ class AddCustomGraphicNodeViewTaskFactory implements NodeViewTaskFactory {
 class AddCustomGraphicTask implements Task {
   final CySwingApplication swingApp;
   final CustomGraphicsFactoryManager manager;
-  final CyNetwork network;
+  final CyNetworkView networkView;
+  final View<CyNode> nodeView;
 
-  public AddCustomGraphicTask(final CySwingApplication swingApp, final CustomGraphicsFactoryManager manager, final CyNetwork network) { 
+  public AddCustomGraphicTask(final CySwingApplication swingApp, final CustomGraphicsFactoryManager manager, final CyNetworkView networkView, final View<CyNode> nodeView) { 
     this.swingApp = swingApp;
     this.manager = manager;
-    this.network = network;
+    this.networkView = networkView;
+    this.nodeView = nodeView;
   }
 
   public void run(TaskMonitor monitor) {
     final MainDialog d = new MainDialog(swingApp.getJFrame(), manager);
-    d.setChartPanelForCyTable(network.getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS));
+    d.setup(networkView, nodeView);
     d.pack();
     d.setVisible(true);
   }

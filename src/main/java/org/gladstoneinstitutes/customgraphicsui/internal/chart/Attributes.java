@@ -23,12 +23,14 @@ class Attributes {
     if (numericColNames != null) {
       buffer.append("attributelist=\"");
       Strings.join(numericColNames, ",", buffer);
-      buffer.append("\" ");
+      buffer.append("\"");
     }
 
+    /*
     buffer.append("labels=\"");
     Strings.join(labels, ",", buffer);
     buffer.append("\" ");
+    */
 
     return buffer;
   }
