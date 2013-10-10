@@ -1,6 +1,8 @@
 package org.gladstoneinstitutes.customgraphicsui.internal.chart;
 
+import java.awt.Dimension;
 import java.awt.GridBagLayout;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Color;
@@ -9,11 +11,16 @@ import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.RenderingHints;
 import java.awt.Insets;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import java.awt.geom.Rectangle2D;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JComponent;
+import javax.swing.JRadioButton;
+import javax.swing.JLabel;
+import javax.swing.ButtonGroup;
 import javax.swing.BorderFactory;
 
 import javax.swing.event.TableModelListener;
@@ -55,9 +62,44 @@ public class ChartPanel extends JPanel {
 
     preview.setBorder(BorderFactory.createLineBorder(java.awt.Color.GRAY, 1));
 
+    final ButtonGroup typeGroup = new ButtonGroup();
+    final JRadioButton barButton = new JRadioButton("Bar");
+    typeGroup.add(barButton);
+    barButton.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        chart = new BarChart();
+        chart.setAttributes(attrsTable.getAttributes());
+        preview.repaint();
+      }
+    });
+    final JRadioButton pieButton = new JRadioButton("Pie");
+    typeGroup.add(pieButton);
+    pieButton.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        chart = new PieChart();
+        chart.setAttributes(attrsTable.getAttributes());
+        preview.repaint();
+      }
+    });
+    final JRadioButton heatstripButton = new JRadioButton("Heatstrip");
+    typeGroup.add(heatstripButton);
+    heatstripButton.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        chart = new HeatstripChart();
+        chart.setAttributes(attrsTable.getAttributes());
+        preview.repaint();
+      }
+    });
+    final JPanel typePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    typePanel.add(new JLabel("Type: "));
+    typePanel.add(barButton);
+    typePanel.add(pieButton);
+    typePanel.add(heatstripButton);
+
     final EasyGBC c = new EasyGBC();
-    super.add(preview, c.expand(0.5, 1.0));
-    super.add(new JScrollPane(attrsTable), c.right().insets(0, 10, 0, 0));
+    super.add(preview, c.spanV(2).expand(0.5, 1.0));
+    super.add(typePanel, c.noSpan().right().expandH());
+    super.add(new JScrollPane(attrsTable), c.down().right().expand(0.5, 1.0).insets(0, 10, 0, 0));
   }
 
   public void setup(final CyNetworkView networkView, final View<CyNode> nodeView) {
@@ -71,6 +113,9 @@ public class ChartPanel extends JPanel {
     final Insets            insets = new Insets(0, 0, 0, 0);
     final AffineTransform   at     = new AffineTransform();
 
+    public ChartPreview() {
+      super.setPreferredSize(new Dimension(300, 300));
+    }
 
     protected void paintComponent(Graphics g) {
       if (chart == null || networkView == null || nodeView == null)
@@ -81,7 +126,7 @@ public class ChartPanel extends JPanel {
       box.y = insets.top;
       box.width = super.getWidth() - insets.left - insets.right;
       box.height = super.getHeight() - insets.top - insets.bottom;
-      System.out.println(box);
+      System.out.println("component box: " + box);
 
       final Graphics2D g2d = (Graphics2D) g;
       g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -93,19 +138,28 @@ public class ChartPanel extends JPanel {
       final CyCustomGraphics<? extends CustomGraphicLayer> customGraphics = factory.getInstance(cgString);
       final float fit = customGraphics.getFitRatio();
 
+      final Rectangle2D.Double maxBounds = new Rectangle2D.Double();
       for (CustomGraphicLayer layer : customGraphics.getLayers(networkView, nodeView)) {
-        final Rectangle2D originalBounds = layer.getBounds2D();
-        System.out.println(originalBounds);
-        if (originalBounds != null) {
-          g2d.scale(fit * box.width / originalBounds.getWidth(), fit * box.height / originalBounds.getHeight());
-          /*
-          at.setToScale(fit * box.width / originalBounds.getWidth(), fit * box.height / originalBounds.getHeight());
-          layer = layer.transform(at);
-          */
-        }
         final PaintedShape ps = (PaintedShape) layer;
         final Shape shape = ps.getShape();
-        g2d.translate(box.x, box.y);
+        maxBounds.add(shape.getBounds2D());
+      }
+
+      final AffineTransform originalAt = g2d.getTransform();
+      double factor;
+      if (maxBounds.width < maxBounds.height) {
+        factor = box.height / maxBounds.height;
+      } else {
+        factor = box.width / maxBounds.width;
+      }
+      g2d.translate(box.x, box.y);
+      g2d.scale(factor, factor);
+      g2d.translate(-maxBounds.x, -maxBounds.y);
+
+      for (CustomGraphicLayer layer : customGraphics.getLayers(networkView, nodeView)) {
+        final PaintedShape ps = (PaintedShape) layer;
+        final Shape shape = ps.getShape();
+
         if (ps.getStroke() != null) {
           Paint strokePaint = ps.getStrokePaint();
           if (strokePaint == null) strokePaint = Color.BLACK;
@@ -116,6 +170,8 @@ public class ChartPanel extends JPanel {
         g2d.setPaint(ps.getPaint());
         g2d.fill(shape);
       }
+
+      g2d.setTransform(originalAt);
     }
   }
 }

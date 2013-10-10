@@ -26,11 +26,9 @@ class Attributes {
       buffer.append("\"");
     }
 
-    /*
-    buffer.append("labels=\"");
+    buffer.append("labellist=\"");
     Strings.join(labels, ",", buffer);
     buffer.append("\" ");
-    */
 
     return buffer;
   }
