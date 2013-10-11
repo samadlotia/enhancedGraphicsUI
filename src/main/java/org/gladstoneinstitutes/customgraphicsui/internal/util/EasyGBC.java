@@ -42,6 +42,13 @@ public class EasyGBC extends GridBagConstraints {
 		return this;
 	}
 
+	public EasyGBC expandV() {
+		weightx = 0.0;
+		weighty = 1.0;
+		fill = GridBagConstraints.VERTICAL;
+		return this;
+	}
+
 	public EasyGBC expandHV() {
 		weightx = 1.0;
 		weighty = 1.0;

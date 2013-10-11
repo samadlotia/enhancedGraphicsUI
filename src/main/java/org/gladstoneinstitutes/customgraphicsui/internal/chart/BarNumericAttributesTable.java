@@ -3,12 +3,16 @@ package org.gladstoneinstitutes.customgraphicsui.internal.chart;
 import javax.swing.JTable;
 import javax.swing.JScrollPane;
 import javax.swing.JPanel;
+import javax.swing.JDialog;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.TransferHandler;
 import javax.swing.AbstractCellEditor;
 import javax.swing.ListSelectionModel;
 import javax.swing.DropMode;
 import javax.swing.JComponent;
+import javax.swing.JColorChooser;
 
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
@@ -19,6 +23,7 @@ import javax.swing.table.TableModel;
 import javax.swing.event.TableModelEvent;
 
 import java.awt.Component;
+import java.awt.Color;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -36,11 +41,13 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyColumn;
 
 import org.gladstoneinstitutes.customgraphicsui.internal.util.EasyGBC;
+import org.gladstoneinstitutes.customgraphicsui.internal.util.Colors;
+import org.gladstoneinstitutes.customgraphicsui.internal.util.Strings;
 
-class AttributesTable extends JTable {
+class BarNumericAttributesTable extends JTable {
   final AttributeTableModel model = new AttributeTableModel();
 
-  public AttributesTable() {
+  public BarNumericAttributesTable() {
     super.setModel(model);
     
     final TableColumn activeCol = super.getColumnModel().getColumn(0);
@@ -48,6 +55,12 @@ class AttributesTable extends JTable {
     activeCol.setCellEditor(new BooleanCellHandler());
     activeCol.setMaxWidth(35);
     activeCol.setMinWidth(35);
+
+    final TableColumn colorCol = super.getColumnModel().getColumn(3);
+    colorCol.setCellRenderer(new ColorCellRenderer());
+    colorCol.setCellEditor(new ColorCellEditor());
+    colorCol.setMaxWidth(50);
+    colorCol.setMinWidth(50);
 
     super.setDragEnabled(true);
     super.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -59,41 +72,59 @@ class AttributesTable extends JTable {
     model.forCyTable(table);
   }
 
-  public Attributes getAttributes() {
-    return model.getAttributes();
+  public void appendCgString(final StringBuffer buffer) {
+    model.appendCgString(buffer);
   }
 
   static class AttributeRow {
     public boolean enabled = false;
     public CyColumn attribute;
     public String label;
+    public Color color;
   }
 
   static class AttributeTableModel extends AbstractTableModel {
-    List<AttributeRow> rows = new ArrayList<AttributeRow>();
+    final List<AttributeRow> rows = new ArrayList<AttributeRow>();
 
-    public Attributes getAttributes() {
+    public void appendCgString(final StringBuffer buffer) {
       int count = 0;
-      for (final AttributeRow row : rows) {
-        if (row.enabled) {
+      for (int i = 0; i < rows.size(); i++) {
+        final AttributeRow row = rows.get(i);
+        if (row.enabled)
           count++;
-        }
       }
+      if (count < 2)
+        return;
 
-      if (count == 0)
-        return null;
-
-      final String[] colNames = new String[count];
-      final String[] labels = new String[count];
-      int i = 0;
-      for (final AttributeRow row : rows) {
-        if (row.enabled) {
-          colNames[i] = row.attribute.getName();
-          labels[i] = row.label;
-          i++;
-        }
+      buffer.append("attributelist=\"");
+      for (int i = 0; i < rows.size(); i++) {
+        final AttributeRow row = rows.get(i);
+        if (!row.enabled) continue;
+        buffer.append(row.attribute.getName());
+        buffer.append(',');
       }
-      return new Attributes(colNames, labels);
+      buffer.deleteCharAt(buffer.length() - 1);
+      buffer.append("\" ");
+
+      buffer.append("labellist=\"");
+      for (int i = 0; i < rows.size(); i++) {
+        final AttributeRow row = rows.get(i);
+        if (!row.enabled) continue;
+        buffer.append(row.label);
+        buffer.append(',');
+      }
+      buffer.deleteCharAt(buffer.length() - 1);
+      buffer.append("\" ");
+
+      buffer.append("colorlist=\"");
+      for (int i = 0; i < rows.size(); i++) {
+        final AttributeRow row = rows.get(i);
+        if (!row.enabled) continue;
+        buffer.append(String.format("#%02x%02x%02x", row.color.getRed(), row.color.getGreen(), row.color.getBlue()));
+        buffer.append(',');
+      }
+      buffer.deleteCharAt(buffer.length() - 1);
+      buffer.append("\" ");
     }
 
     public void forCyTable(final CyTable table) {
@@ -106,13 +137,14 @@ class AttributesTable extends JTable {
         row.enabled = false;
         row.attribute = col;
         row.label = col.getName();
+        row.color = null;
         rows.add(row);
       }
       super.fireTableRowsInserted(0, rows.size() - 1);
     }
 
     public int getColumnCount() {
-      return 3;
+      return 4;
     }
 
     public int getRowCount() {
@@ -122,6 +154,7 @@ class AttributesTable extends JTable {
     public Class<?> getColumnClass(int col) {
       switch (col) {
         case 0: return Boolean.class;
+        case 3: return Color.class;
         default: return String.class;
       }
     }
@@ -131,6 +164,7 @@ class AttributesTable extends JTable {
         case 0: return "";
         case 1: return "Attribute";
         case 2: return "Label in Chart";
+        case 3: return "Color";
         default: return null;
       }
     }
@@ -138,7 +172,8 @@ class AttributesTable extends JTable {
     public boolean isCellEditable(int row, int col) {
       switch (col) {
         case 0: 
-        case 2: return true;
+        case 2: 
+        case 3: return true;
         default: return false;
       }
     }
@@ -149,22 +184,34 @@ class AttributesTable extends JTable {
         case 0: return attrRow.enabled;
         case 1: return attrRow.attribute.getName();
         case 2: return attrRow.label;
+        case 3: return attrRow.color;
         default: return null;
       }
     }
 
+    int colorIndex = 0;
     public void setValueAt(Object val, int row, int col) {
       final AttributeRow attrRow = rows.get(row);
       switch (col) {
         case 0:
           attrRow.enabled = (Boolean) val;
-          super.fireTableChanged(new TableModelEvent(this, row, col));
+          if (attrRow.enabled && attrRow.color == null) {
+            attrRow.color = Colors.getColor(colorIndex++);
+            super.fireTableChanged(new TableModelEvent(this, row, 3));
+          }
           break;
         case 2:
           attrRow.label = (String) val;
-          super.fireTableChanged(new TableModelEvent(this, row, col));
+          break;
+        case 3:
+          attrRow.color = (Color) val;
+          if (!attrRow.enabled && val != null) {
+            attrRow.enabled = true;
+            super.fireTableChanged(new TableModelEvent(this, row, 0));
+          }
           break;
       }
+      super.fireTableChanged(new TableModelEvent(this, row, col));
     }
 
     public void move(int source, int target) {
@@ -182,7 +229,7 @@ class AttributesTable extends JTable {
     final JCheckBox checkBox = new JCheckBox();
 
     public BooleanCellHandler() {
-      checkBox.setBackground(AttributesTable.super.getBackground());
+      checkBox.setBackground(BarNumericAttributesTable.super.getBackground());
       checkBox.setFocusPainted(false);
       checkBox.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
@@ -210,13 +257,72 @@ class AttributesTable extends JTable {
     }
   }
 
+  class ColorCellRenderer implements TableCellRenderer {
+    final JLabel label = new JLabel();
+
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+      if (value == null) {
+        label.setOpaque(false);
+      } else {
+        label.setBackground((Color) value);
+        label.setOpaque(true);
+      }
+      return label;
+    }
+  }
+
+  public class ColorCellEditor extends AbstractCellEditor implements TableCellEditor, ActionListener {
+    Color currentColor;
+    JButton button;
+    JColorChooser colorChooser;
+    JDialog dialog;
+    protected static final String EDIT = "edit";
+
+    public ColorCellEditor() {
+      button = new JButton();
+      button.setActionCommand(EDIT);
+      button.addActionListener(this);
+      button.setBorderPainted(false);
+
+        //Set up the dialog that the button brings up.
+      colorChooser = new JColorChooser();
+      dialog = JColorChooser.createDialog(button, "Pick a Color", true, colorChooser, this, null);
+    }
+
+    public void actionPerformed(ActionEvent e) {
+      if (EDIT.equals(e.getActionCommand())) {
+            //The user has clicked the cell, so
+            //bring up the dialog.
+        button.setBackground(currentColor);
+        colorChooser.setColor(currentColor);
+        dialog.setVisible(true);
+
+            fireEditingStopped(); //Make the renderer reappear.
+
+        } else { //User pressed dialog's "OK" button.
+        currentColor = colorChooser.getColor();
+      }
+    }
+
+    //Implement the one CellEditor method that AbstractCellEditor doesn't.
+    public Object getCellEditorValue() {
+      return currentColor;
+    }
+
+    //Implement the one method defined by TableCellEditor.
+    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+      currentColor = (Color)value;
+      return button;
+    }
+  }
+
   class InternalTransferHandler extends TransferHandler {
     public int getSourceActions(JComponent c) {
       return TransferHandler.MOVE;
     }
 
     public Transferable createTransferable(JComponent c) {
-      return new StringSelection(Integer.toString(AttributesTable.this.getSelectedRow()));
+      return new StringSelection(Integer.toString(BarNumericAttributesTable.this.getSelectedRow()));
     }
 
     private Integer getRowIndexFromStringData(final TransferHandler.TransferSupport support) {
@@ -226,7 +332,7 @@ class AttributesTable extends JTable {
           continue;
         try {
           final Integer rowIndex = Integer.parseInt((String) transferable.getTransferData(flavor));
-          if (0 <= rowIndex && rowIndex < AttributesTable.this.getRowCount())
+          if (0 <= rowIndex && rowIndex < BarNumericAttributesTable.this.getRowCount())
             return rowIndex;
         } catch (Exception e) {}
       }
@@ -250,7 +356,7 @@ class AttributesTable extends JTable {
         targetRow -= 1;
 
       model.move(sourceRow, targetRow);
-      AttributesTable.this.setRowSelectionInterval(targetRow, targetRow);
+      BarNumericAttributesTable.this.setRowSelectionInterval(targetRow, targetRow);
       return true;
     }
   }

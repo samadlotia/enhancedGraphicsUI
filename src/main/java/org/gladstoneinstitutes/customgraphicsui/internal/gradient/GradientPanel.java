@@ -104,7 +104,7 @@ public class GradientPanel extends JPanel {
     gradientPositionEditor.setBorder(BorderFactory.createLineBorder(new Color(0x858585), 1));
 
     final JPanel typePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-    typePanel.add(new JLabel("Gradient Type: "));
+    typePanel.add(new JLabel("Type: "));
     final ButtonGroup typeGroup = new ButtonGroup();
     for (final GradientOrientation.Type type : GradientOrientation.Type.values()) {
       final JRadioButton typeButton = new JRadioButton(type.toString());
@@ -121,10 +121,10 @@ public class GradientPanel extends JPanel {
     }
 
     super.setLayout(new GridBagLayout());
-    super.add(gradientPositionEditor, c.expand(0.5, 1.0).spanV(3).insets(10, 10, 10, 10));
-    super.add(typePanel, c.right().noSpan().expandH().insets(0, 0, 0, 0));
-    super.add(editor, c.down().right().expand(0.5, 1.0).insets(10, 0, 0, 10));
-    super.add(anchorPanel, c.noExpand().down().right().insets(10, 0, 0, 10));
+    super.add(gradientPositionEditor, c.expandHV().spanV(3).insets(10, 10, 10, 10));
+    super.add(typePanel, c.right().noSpan().noExpand().insets(0, 0, 0, 0));
+    super.add(editor, c.down().right().expand(0.0, 0.0).insets(10, 0, 0, 10));
+    super.add(anchorPanel, c.anchor("nw").down().right().noExpand().insets(10, 0, 0, 10));
   }	
 }
 
