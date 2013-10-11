@@ -44,10 +44,10 @@ import org.gladstoneinstitutes.customgraphicsui.internal.util.EasyGBC;
 import org.gladstoneinstitutes.customgraphicsui.internal.util.Colors;
 import org.gladstoneinstitutes.customgraphicsui.internal.util.Strings;
 
-class BarNumericAttributesTable extends JTable {
+class NumericAttributesWithColorsTable extends JTable {
   final AttributeTableModel model = new AttributeTableModel();
 
-  public BarNumericAttributesTable() {
+  public NumericAttributesWithColorsTable() {
     super.setModel(model);
     
     final TableColumn activeCol = super.getColumnModel().getColumn(0);
@@ -229,7 +229,7 @@ class BarNumericAttributesTable extends JTable {
     final JCheckBox checkBox = new JCheckBox();
 
     public BooleanCellHandler() {
-      checkBox.setBackground(BarNumericAttributesTable.super.getBackground());
+      checkBox.setBackground(NumericAttributesWithColorsTable.super.getBackground());
       checkBox.setFocusPainted(false);
       checkBox.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
@@ -322,7 +322,7 @@ class BarNumericAttributesTable extends JTable {
     }
 
     public Transferable createTransferable(JComponent c) {
-      return new StringSelection(Integer.toString(BarNumericAttributesTable.this.getSelectedRow()));
+      return new StringSelection(Integer.toString(NumericAttributesWithColorsTable.this.getSelectedRow()));
     }
 
     private Integer getRowIndexFromStringData(final TransferHandler.TransferSupport support) {
@@ -332,7 +332,7 @@ class BarNumericAttributesTable extends JTable {
           continue;
         try {
           final Integer rowIndex = Integer.parseInt((String) transferable.getTransferData(flavor));
-          if (0 <= rowIndex && rowIndex < BarNumericAttributesTable.this.getRowCount())
+          if (0 <= rowIndex && rowIndex < NumericAttributesWithColorsTable.this.getRowCount())
             return rowIndex;
         } catch (Exception e) {}
       }
@@ -356,7 +356,7 @@ class BarNumericAttributesTable extends JTable {
         targetRow -= 1;
 
       model.move(sourceRow, targetRow);
-      BarNumericAttributesTable.this.setRowSelectionInterval(targetRow, targetRow);
+      NumericAttributesWithColorsTable.this.setRowSelectionInterval(targetRow, targetRow);
       return true;
     }
   }

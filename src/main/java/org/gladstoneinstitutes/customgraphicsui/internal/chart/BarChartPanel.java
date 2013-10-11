@@ -28,7 +28,7 @@ import org.cytoscape.view.model.View;
 class BarChartPanel extends JPanel {
   public static final String CG_CHANGED = "cg changed";
 
-  final BarNumericAttributesTable attrsTable = new BarNumericAttributesTable();
+  final NumericAttributesWithColorsTable attrsTable = new NumericAttributesWithColorsTable();
   final JCheckBox showLabelsCheckBox = new JCheckBox("Show labels");
   final JSpinner separationSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
 
