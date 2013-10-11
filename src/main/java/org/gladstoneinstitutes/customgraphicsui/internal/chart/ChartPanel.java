@@ -46,15 +46,15 @@ import org.gladstoneinstitutes.customgraphicsui.internal.util.EasyGBC;
 
 public class ChartPanel extends JPanel {
   final ChartPreview preview;
-  final BarChartPanel barChartPanel;
+  final ChartSubpanel chartSubpanel;
 
   public ChartPanel(final CustomGraphicsFactoryManager cgMgr) {
     super(new GridBagLayout());
     preview = new ChartPreview(cgMgr);
-    barChartPanel = new BarChartPanel();
-    barChartPanel.addPropertyChangeListener(new PropertyChangeListener() {
+    chartSubpanel = new BarChartSubpanel();
+    chartSubpanel.addPropertyChangeListener(new PropertyChangeListener() {
       public void propertyChange(final PropertyChangeEvent e) {
-        preview.assignCg("barchart", barChartPanel.buildCgString());
+        preview.assignCg(chartSubpanel.getCgName(), chartSubpanel.buildCgString());
       }
     });
 
@@ -101,11 +101,11 @@ public class ChartPanel extends JPanel {
     final EasyGBC c = new EasyGBC();
     super.add(preview, c.spanV(2).expandHV().insets(10, 10, 10, 0));
     super.add(typePanel, c.noSpan().right().noExpand().insets(10, 10, 0, 0));
-    super.add(barChartPanel, c.down().right().expandV().insets(0, 10, 10, 10));
+    super.add(chartSubpanel, c.down().right().expandV().insets(0, 10, 10, 10));
   }
 
   public void setup(final CyNetworkView networkView, final View<CyNode> nodeView) {
-    barChartPanel.setup(networkView, nodeView);
+    chartSubpanel.setup(networkView, nodeView);
     preview.setup(networkView, nodeView);
   }
 }

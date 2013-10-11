@@ -25,32 +25,28 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 
-class BarChartPanel extends JPanel {
-  public static final String CG_CHANGED = "cg changed";
-
+class BarChartSubpanel extends ChartSubpanel {
   final NumericAttributesWithColorsTable attrsTable = new NumericAttributesWithColorsTable();
   final JCheckBox showLabelsCheckBox = new JCheckBox("Show labels");
   final JSpinner separationSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
 
-  public BarChartPanel() {
-    super(new GridBagLayout());
-
+  public BarChartSubpanel() {
     attrsTable.getModel().addTableModelListener(new TableModelListener() {
       public void tableChanged(TableModelEvent e) {
-        BarChartPanel.this.firePropertyChange(CG_CHANGED, null, null);
+        BarChartSubpanel.this.firePropertyChange(CG_CHANGED, null, null);
       }
     });
 
     showLabelsCheckBox.setSelected(true);
     showLabelsCheckBox.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        BarChartPanel.this.firePropertyChange(CG_CHANGED, null, null);
+        BarChartSubpanel.this.firePropertyChange(CG_CHANGED, null, null);
       }
     });
 
     separationSpinner.addChangeListener(new ChangeListener() {
       public void stateChanged(ChangeEvent e) {
-        BarChartPanel.this.firePropertyChange(CG_CHANGED, null, null);
+        BarChartSubpanel.this.firePropertyChange(CG_CHANGED, null, null);
       }
     });
 
@@ -62,9 +58,14 @@ class BarChartPanel extends JPanel {
     optionsPanel.add(showLabelsCheckBox);
     optionsPanel.add(separationPanel);
 
+    super.setLayout(new GridBagLayout());
     final EasyGBC c = new EasyGBC();
     super.add(new JScrollPane(attrsTable), c.expandHV());
     super.add(optionsPanel, c.anchor("nw").down().noExpand());
+  }
+
+  public String getCgName() {
+    return "barchart";
   }
 
   public String buildCgString() {
