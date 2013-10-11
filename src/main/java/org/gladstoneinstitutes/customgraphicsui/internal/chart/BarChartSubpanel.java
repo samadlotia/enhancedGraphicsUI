@@ -64,6 +64,10 @@ class BarChartSubpanel extends ChartSubpanel {
     super.add(optionsPanel, c.anchor("nw").down().noExpand());
   }
 
+  public String getUserName() {
+    return "Bar";
+  }
+
   public String getCgName() {
     return "barchart";
   }

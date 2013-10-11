@@ -11,5 +11,6 @@ abstract class ChartSubpanel extends JPanel {
 
 	public abstract String getCgName();
 	public abstract String buildCgString();
+	public abstract String getUserName();
   public abstract void setup(final CyNetworkView networkView, final View<CyNode> nodeView);
 }

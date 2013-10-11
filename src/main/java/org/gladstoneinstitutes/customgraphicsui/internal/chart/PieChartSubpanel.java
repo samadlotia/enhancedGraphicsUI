@@ -25,15 +25,13 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 
-class PieChartSubpanel extends JPanel {
-  public static final String CG_CHANGED = "cg changed";
-
+class PieChartSubpanel extends ChartSubpanel {
   final NumericAttributesWithColorsTable attrsTable = new NumericAttributesWithColorsTable();
   final JCheckBox showLabelsCheckBox = new JCheckBox("Show labels");
   final JSpinner separationSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
 
   public PieChartSubpanel() {
-    super(new GridBagLayout());
+    super.setLayout(new GridBagLayout());
 
     attrsTable.getModel().addTableModelListener(new TableModelListener() {
       public void tableChanged(TableModelEvent e) {
@@ -65,6 +63,10 @@ class PieChartSubpanel extends JPanel {
     final EasyGBC c = new EasyGBC();
     super.add(new JScrollPane(attrsTable), c.expandHV());
     super.add(optionsPanel, c.anchor("nw").down().noExpand());
+  }
+
+  public String getUserName() {
+    return "Pie";
   }
 
   public String getCgName() {

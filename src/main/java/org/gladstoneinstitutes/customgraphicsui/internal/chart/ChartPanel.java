@@ -1,9 +1,13 @@
 package org.gladstoneinstitutes.customgraphicsui.internal.chart;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Arrays;
 
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
+import java.awt.CardLayout;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -46,67 +50,53 @@ import org.gladstoneinstitutes.customgraphicsui.internal.util.EasyGBC;
 
 public class ChartPanel extends JPanel {
   final ChartPreview preview;
-  final ChartSubpanel chartSubpanel;
+  final Map<String,ChartSubpanel> subpanels = new HashMap<String,ChartSubpanel>();
+  ChartSubpanel currentSubpanel = null;
 
   public ChartPanel(final CustomGraphicsFactoryManager cgMgr) {
     super(new GridBagLayout());
     preview = new ChartPreview(cgMgr);
-    chartSubpanel = new BarChartSubpanel();
-    chartSubpanel.addPropertyChangeListener(new PropertyChangeListener() {
-      public void propertyChange(final PropertyChangeEvent e) {
-        preview.assignCg(chartSubpanel.getCgName(), chartSubpanel.buildCgString());
-      }
-    });
 
-    preview.setBorder(BorderFactory.createLineBorder(new Color(0x858585), 1));
-
-    /*
-    final ButtonGroup typeGroup = new ButtonGroup();
-    final JRadioButton barButton = new JRadioButton("Bar");
-    typeGroup.add(barButton);
-    barButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        chart = new BarChart();
-        chart.setAttributes(attrsTable.getAttributes());
-        preview.repaint();
-      }
-    });
-    final JRadioButton pieButton = new JRadioButton("Pie");
-    typeGroup.add(pieButton);
-    pieButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        chart = new PieChart();
-        chart.setAttributes(attrsTable.getAttributes());
-        preview.repaint();
-      }
-    });
-    final JRadioButton heatstripButton = new JRadioButton("Heatstrip");
-    typeGroup.add(heatstripButton);
-    heatstripButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        chart = new HeatstripChart();
-        chart.setAttributes(attrsTable.getAttributes());
-        preview.repaint();
-      }
-    });
-    */
     final JPanel typePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
     typePanel.add(new JLabel("Type: "));
-    /*
-    typePanel.add(barButton);
-    typePanel.add(pieButton);
-    typePanel.add(heatstripButton);
-    */
+    final ButtonGroup typeGroup = new ButtonGroup();
+    final PropertyChangeListener cgUpdater = new PropertyChangeListener() {
+      public void propertyChange(final PropertyChangeEvent e) {
+        preview.assignCg(currentSubpanel.getCgName(), currentSubpanel.buildCgString());
+      }
+    };
+
+    final CardLayout cardLayout = new CardLayout();
+    final JPanel subpanelsPanel = new JPanel(cardLayout);
+    for (final ChartSubpanel subpanel : Arrays.asList(new BarChartSubpanel(), new PieChartSubpanel())) {
+      subpanels.put(subpanel.getUserName(), subpanel);
+      subpanelsPanel.add(subpanel, subpanel.getUserName());
+      subpanel.addPropertyChangeListener(cgUpdater);
+      final JRadioButton button = new JRadioButton(subpanel.getUserName());
+      typeGroup.add(button);
+      typePanel.add(button);
+      button.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          currentSubpanel = subpanel;
+          cardLayout.show(subpanelsPanel, subpanel.getUserName());
+          cgUpdater.propertyChange(null);
+        }
+      });
+    }
+
+    preview.setBorder(BorderFactory.createLineBorder(new Color(0x858585), 1));
 
     final EasyGBC c = new EasyGBC();
     super.add(preview, c.spanV(2).expandHV().insets(10, 10, 10, 0));
     super.add(typePanel, c.noSpan().right().noExpand().insets(10, 10, 0, 0));
-    super.add(chartSubpanel, c.down().right().expandV().insets(0, 10, 10, 10));
+    super.add(subpanelsPanel, c.down().right().expandV().insets(0, 10, 10, 10));
   }
 
   public void setup(final CyNetworkView networkView, final View<CyNode> nodeView) {
-    chartSubpanel.setup(networkView, nodeView);
     preview.setup(networkView, nodeView);
+    for (final ChartSubpanel subpanel : subpanels.values()) {
+      subpanel.setup(networkView, nodeView);
+    }
   }
 }
 
