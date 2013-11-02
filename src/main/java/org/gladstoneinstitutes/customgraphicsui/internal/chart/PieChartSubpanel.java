@@ -10,6 +10,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
+import javax.swing.JSlider;
 import javax.swing.SpinnerNumberModel;
 
 import java.awt.event.ActionListener;
@@ -27,8 +28,10 @@ import org.cytoscape.view.model.View;
 
 class PieChartSubpanel extends ChartSubpanel {
   final NumericAttributesWithColorsTable attrsTable = new NumericAttributesWithColorsTable();
-  final JCheckBox showLabelsCheckBox = new JCheckBox("Show labels");
-  final JSpinner separationSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
+  final JCheckBox showLabelsCheckBox = new JCheckBox("Labels: ");
+  final JSpinner labelSizeSpinner = new JSpinner(new SpinnerNumberModel(8, 1, 100, 1));
+  final JSlider arcStartSlider = new JSlider(0, 360, 0);
+  final JSpinner arcStartSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 360, 45));
 
   public PieChartSubpanel() {
     super.setLayout(new GridBagLayout());
@@ -43,22 +46,44 @@ class PieChartSubpanel extends ChartSubpanel {
     showLabelsCheckBox.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         PieChartSubpanel.this.firePropertyChange(CG_CHANGED, null, null);
+        labelSizeSpinner.setEnabled(showLabelsCheckBox.isSelected());
       }
     });
 
-    separationSpinner.addChangeListener(new ChangeListener() {
+    labelSizeSpinner.addChangeListener(new ChangeListener() {
       public void stateChanged(ChangeEvent e) {
         PieChartSubpanel.this.firePropertyChange(CG_CHANGED, null, null);
       }
     });
 
-    final JPanel separationPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-    separationPanel.add(new JLabel("Space between bars:"));
-    separationPanel.add(separationSpinner);
+    arcStartSlider.setPaintTicks(true);
+    arcStartSlider.setMajorTickSpacing(45);
+    arcStartSlider.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent e) {
+        arcStartSpinner.setValue(arcStartSlider.getValue());
+      }
+    });
+
+    arcStartSpinner.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent e) {
+        PieChartSubpanel.this.firePropertyChange(CG_CHANGED, null, null);
+        arcStartSlider.setValue(((Number)arcStartSpinner.getValue()).intValue());
+      }
+    });
+
+    final JPanel labelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    labelPanel.add(showLabelsCheckBox);
+    labelPanel.add(new JLabel("Size: "));
+    labelPanel.add(labelSizeSpinner);
+
+    final JPanel arcStartPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    arcStartPanel.add(new JLabel("Rotate: "));
+    arcStartPanel.add(arcStartSlider);
+    arcStartPanel.add(arcStartSpinner);
 
     final JPanel optionsPanel = new JPanel(new GridLayout(0, 1, 0, 0));
-    optionsPanel.add(showLabelsCheckBox);
-    optionsPanel.add(separationPanel);
+    optionsPanel.add(labelPanel);
+    optionsPanel.add(arcStartPanel);
 
     final EasyGBC c = new EasyGBC();
     super.add(new JScrollPane(attrsTable), c.expandHV());
@@ -78,8 +103,10 @@ class PieChartSubpanel extends ChartSubpanel {
     attrsTable.appendCgString(buffer);
     buffer.append("showlabels=");
     buffer.append(showLabelsCheckBox.isSelected());
-    buffer.append(" separation=");
-    buffer.append(separationSpinner.getValue());
+    buffer.append(" labelsize=");
+    buffer.append(labelSizeSpinner.getValue());
+    buffer.append(" arcstart=");
+    buffer.append(arcStartSpinner.getValue());
     return buffer.toString();
   }
 
