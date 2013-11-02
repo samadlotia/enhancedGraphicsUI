@@ -69,7 +69,7 @@ public class ChartPanel extends JPanel {
 
     final CardLayout cardLayout = new CardLayout();
     final JPanel subpanelsPanel = new JPanel(cardLayout);
-    for (final ChartSubpanel subpanel : Arrays.asList(new BarChartSubpanel(), new PieChartSubpanel())) {
+    for (final ChartSubpanel subpanel : Arrays.asList(new BarChartSubpanel(), new PieChartSubpanel(), new HeatStripSubpanel())) {
       subpanels.put(subpanel.getUserName(), subpanel);
       subpanelsPanel.add(subpanel, subpanel.getUserName());
       subpanel.addPropertyChangeListener(cgUpdater);

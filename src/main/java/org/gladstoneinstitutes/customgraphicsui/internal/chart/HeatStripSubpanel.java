@@ -10,6 +10,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
+import javax.swing.JSlider;
 import javax.swing.SpinnerNumberModel;
 
 import java.awt.event.ActionListener;
@@ -25,51 +26,43 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 
-class BarChartSubpanel extends ChartSubpanel {
-  final NumericAttributesWithColorsTable attrsTable = new NumericAttributesWithColorsTable();
+class HeatStripSubpanel extends ChartSubpanel {
+  final NumericAttributesTable attrsTable = new NumericAttributesTable();
   final JCheckBox showLabelsCheckBox = new JCheckBox("Labels");
-  final JSpinner separationSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
 
-  public BarChartSubpanel() {
+  public HeatStripSubpanel() {
+    super.setLayout(new GridBagLayout());
+
     attrsTable.getModel().addTableModelListener(new TableModelListener() {
       public void tableChanged(TableModelEvent e) {
-        BarChartSubpanel.this.firePropertyChange(CG_CHANGED, null, null);
+        HeatStripSubpanel.this.firePropertyChange(CG_CHANGED, null, null);
       }
     });
 
     showLabelsCheckBox.setSelected(true);
     showLabelsCheckBox.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        BarChartSubpanel.this.firePropertyChange(CG_CHANGED, null, null);
+        HeatStripSubpanel.this.firePropertyChange(CG_CHANGED, null, null);
       }
     });
 
-    separationSpinner.addChangeListener(new ChangeListener() {
-      public void stateChanged(ChangeEvent e) {
-        BarChartSubpanel.this.firePropertyChange(CG_CHANGED, null, null);
-      }
-    });
-
-    final JPanel separationPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-    separationPanel.add(new JLabel("Space between bars:"));
-    separationPanel.add(separationSpinner);
+    final JPanel labelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    labelPanel.add(showLabelsCheckBox);
 
     final JPanel optionsPanel = new JPanel(new GridLayout(0, 1, 0, 0));
-    optionsPanel.add(showLabelsCheckBox);
-    optionsPanel.add(separationPanel);
+    optionsPanel.add(labelPanel);
 
-    super.setLayout(new GridBagLayout());
     final EasyGBC c = new EasyGBC();
     super.add(new JScrollPane(attrsTable), c.expandHV());
     super.add(optionsPanel, c.anchor("nw").down().noExpand());
   }
 
   public String getUserName() {
-    return "Bar";
+    return "Heat Strip";
   }
 
   public String getCgName() {
-    return "barchart";
+    return "heatstripchart";
   }
 
   public String buildCgString() {
@@ -77,8 +70,6 @@ class BarChartSubpanel extends ChartSubpanel {
     attrsTable.appendCgString(buffer);
     buffer.append("showlabels=");
     buffer.append(showLabelsCheckBox.isSelected());
-    buffer.append(" separation=");
-    buffer.append(separationSpinner.getValue());
     return buffer.toString();
   }
 
