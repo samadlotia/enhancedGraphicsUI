@@ -62,6 +62,7 @@ public class ChartPanel extends JPanel {
     final ButtonGroup typeGroup = new ButtonGroup();
     final PropertyChangeListener cgUpdater = new PropertyChangeListener() {
       public void propertyChange(final PropertyChangeEvent e) {
+        if (currentSubpanel == null) return;
         preview.assignCg(currentSubpanel.getCgName(), currentSubpanel.buildCgString());
       }
     };
@@ -83,12 +84,13 @@ public class ChartPanel extends JPanel {
         }
       });
     }
+    typeGroup.getElements().nextElement().setSelected(true); // select the first panel's button
 
     preview.setBorder(BorderFactory.createLineBorder(new Color(0x858585), 1));
 
     final EasyGBC c = new EasyGBC();
     super.add(preview, c.spanV(2).expandHV().insets(10, 10, 10, 0));
-    super.add(typePanel, c.noSpan().right().noExpand().insets(10, 10, 0, 0));
+    super.add(typePanel, c.noSpan().right().noExpand().fillH().insets(10, 10, 0, 0));
     super.add(subpanelsPanel, c.down().right().expandV().insets(0, 10, 10, 10));
   }
 
@@ -134,8 +136,19 @@ class ChartPreview extends JComponent {
     if (networkView == null || nodeView == null || factory == null || cgString == null)
       return;
 
-      // obtain the custom graphics
+    // obtain the custom graphics
     final CyCustomGraphics<? extends CustomGraphicLayer> customGraphics = factory.getInstance(cgString);
+    List<? extends CustomGraphicLayer> layers = null;
+    try {
+      layers = customGraphics.getLayers(networkView, nodeView);
+    } catch (Exception e) {
+      // we need to catch exceptions from the cg engine, otherwise
+      // the exception blows up the Swing event thread and messes up the UI
+      System.err.println("Custom graphics internal error:");
+      e.printStackTrace();
+    }
+    if (layers == null) // layers is null if the cg string is not acceptable or there's a bug in the cg string parser
+      return;
     final float fit = customGraphics.getFitRatio();
 
       // setup g2d
@@ -148,9 +161,6 @@ class ChartPreview extends JComponent {
 
       // calculate chartBounds -- the rect that's a union of each chart layer's shape boundaries
     chartBounds.setRect(0.0, 0.0, 0.0, 0.0);
-    final List<? extends CustomGraphicLayer> layers = customGraphics.getLayers(networkView, nodeView);
-    if (layers == null)
-      return;
     for (final CustomGraphicLayer layer : layers) {
       final PaintedShape ps = (PaintedShape) layer;
       final Shape shape = ps.getShape();
