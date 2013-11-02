@@ -126,7 +126,7 @@ class NumericAttributesTable extends JTable {
     }
 
     public int getColumnCount() {
-      return 4;
+      return 3;
     }
 
     public int getRowCount() {

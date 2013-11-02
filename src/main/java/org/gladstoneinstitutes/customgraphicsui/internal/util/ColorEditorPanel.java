@@ -26,8 +26,7 @@ import javax.swing.JTextField;
 import javax.swing.JComponent;
 import javax.swing.BorderFactory;
 
-
-public class ColorPanel extends JPanel {
+public class ColorEditorPanel extends JPanel {
   public static final String COLOR_CHANGED = "color changed";
   final ColorWell well = new ColorWell();
   final JSlider sliderR = createColorSlider();
@@ -39,7 +38,7 @@ public class ColorPanel extends JPanel {
   final JTextField fieldB = createColorField();
   final JTextField fieldA = createColorField();
 
-  public ColorPanel() {
+  public ColorEditorPanel() {
     super(new GridBagLayout());
 
     addChannelUpdates(fieldR, sliderR);
@@ -209,7 +208,7 @@ class ColorWell extends JComponent {
     final int y = insets.top;
     final int w = super.getWidth() - insets.left - insets.right;
     final int h = super.getHeight() - insets.top - insets.bottom;
-    g2d.setPaint(ColorPanel.checkeredPaint());
+    g2d.setPaint(ColorEditorPanel.checkeredPaint());
     g2d.fillRect(x, y, w, h);
     if (color != null) {
       g2d.setColor(color);

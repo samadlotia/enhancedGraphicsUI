@@ -4,7 +4,6 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.FlowLayout;
 import java.awt.Color;
-import org.gladstoneinstitutes.customgraphicsui.internal.util.EasyGBC;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -27,12 +26,16 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 
+import org.gladstoneinstitutes.customgraphicsui.internal.util.EasyGBC;
+import org.gladstoneinstitutes.customgraphicsui.internal.util.Strings;
+
 class HeatStripSubpanel extends ChartSubpanel {
   final NumericAttributesTable attrsTable = new NumericAttributesTable();
   final JCheckBox showLabelsCheckBox = new JCheckBox("Labels");
   Color negativeColor = Color.CYAN;
-  Color zeroColor = Color.BLACK;
+  Color zeroColor     = Color.BLACK;
   Color positiveColor = Color.YELLOW;
+  final JSpinner separationSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
 
   public HeatStripSubpanel() {
     super.setLayout(new GridBagLayout());
@@ -50,14 +53,29 @@ class HeatStripSubpanel extends ChartSubpanel {
       }
     });
 
+    separationSpinner.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent e) {
+        HeatStripSubpanel.this.firePropertyChange(CG_CHANGED, null, null);
+      }
+    });
+
     final JPanel labelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
     labelPanel.add(showLabelsCheckBox);
 
-    final JPanel optionsPanel = new JPanel(new GridLayout(0, 1, 0, 0));
-    optionsPanel.add(labelPanel);
+    final JPanel separationPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+    separationPanel.add(new JLabel("Space between strips:"));
+    separationPanel.add(separationSpinner);
 
     final EasyGBC c = new EasyGBC();
-    super.add(new JScrollPane(attrsTable), c.expandHV());
+    final JPanel tricolorsPanel = new JPanel(new GridBagLayout());
+
+
+    final JPanel optionsPanel = new JPanel(new GridLayout(0, 1, 0, 0));
+    optionsPanel.add(labelPanel);
+    optionsPanel.add(separationPanel);
+    optionsPanel.add(tricolorsPanel);
+
+    super.add(new JScrollPane(attrsTable), c.reset().expandHV());
     super.add(optionsPanel, c.anchor("nw").down().noExpand());
   }
 
@@ -74,6 +92,16 @@ class HeatStripSubpanel extends ChartSubpanel {
     attrsTable.appendCgString(buffer);
     buffer.append("showlabels=");
     buffer.append(showLabelsCheckBox.isSelected());
+    buffer.append(" colorlist=\"");
+    buffer.append("up:#");
+    buffer.append(Strings.colorToHex(positiveColor));
+    buffer.append(",zero:#");
+    buffer.append(Strings.colorToHex(zeroColor));
+    buffer.append(",down:#");
+    buffer.append(Strings.colorToHex(negativeColor));
+    buffer.append('\"');
+    buffer.append(" separation=");
+    buffer.append(separationSpinner.getValue());
     return buffer.toString();
   }
 

@@ -16,7 +16,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.Path2D;
 import java.awt.Insets;
 
-import org.gladstoneinstitutes.customgraphicsui.internal.util.ColorPanel;
+import org.gladstoneinstitutes.customgraphicsui.internal.util.ColorEditorPanel;
 
 public class GradientEditorUI extends ComponentUI {
   final GradientEditor editor;
@@ -43,7 +43,7 @@ public class GradientEditorUI extends ComponentUI {
     updateGradientRegion();
 
     // paint background pattern
-    g2d.setPaint(ColorPanel.checkeredPaint());
+    g2d.setPaint(ColorEditorPanel.checkeredPaint());
     g2d.fill(gradientRegion);
 
     // paint up to the first stop

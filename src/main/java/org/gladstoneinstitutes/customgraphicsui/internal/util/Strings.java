@@ -1,5 +1,7 @@
 package org.gladstoneinstitutes.customgraphicsui.internal.util;
 
+import java.awt.Color;
+
 public class Strings {
 	public static String join(String[] pieces, String joiner) {
     final StringBuffer buffer = new StringBuffer();
@@ -15,5 +17,13 @@ public class Strings {
       buffer.append(joiner);
     }
     buffer.append(pieces[pieces.length - 1]);
+  }
+
+  public static String colorToHex(final Color c) {
+    return String.format("%02x%02x%02x%02x",
+      c.getRed(),
+      c.getGreen(),
+      c.getBlue(),
+      c.getAlpha());
   }
 }

@@ -69,7 +69,11 @@ public class ChartPanel extends JPanel {
 
     final CardLayout cardLayout = new CardLayout();
     final JPanel subpanelsPanel = new JPanel(cardLayout);
-    for (final ChartSubpanel subpanel : Arrays.asList(new BarChartSubpanel(), new PieChartSubpanel(), new HeatStripSubpanel())) {
+    for (final ChartSubpanel subpanel : Arrays.asList(
+        new BarChartSubpanel(),
+        new PieChartSubpanel(),
+        new HeatStripSubpanel()
+      )) {
       subpanels.put(subpanel.getUserName(), subpanel);
       subpanelsPanel.add(subpanel, subpanel.getUserName());
       subpanel.addPropertyChangeListener(cgUpdater);
@@ -123,6 +127,7 @@ class ChartPreview extends JComponent {
   public void assignCg(final String cgName, final String cgString) {
     this.factory = cgMgr.getFactory(cgName);
     this.cgString = cgString;
+    System.out.println("cgString: " + cgString);
     super.repaint();
   }
 
