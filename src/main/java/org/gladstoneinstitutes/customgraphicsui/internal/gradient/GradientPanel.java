@@ -47,27 +47,27 @@ public class GradientPanel extends JPanel {
   final CustomGraphicsFactoryManager manager;
   final GradientEditor editor;
   final GradientOrientationEditor gradientPositionEditor;
-  final ColorEditorPanel ColorEditorPanel;
+  final ColorEditorPanel colorEditorPanel;
   final AnchorPositionPanel anchorPositionPanel;
 
   public GradientPanel(final CustomGraphicsFactoryManager manager) {
     this.manager = manager;
     this.editor = new GradientEditor();
     this.gradientPositionEditor = new GradientOrientationEditor(editor, manager);
-    this.ColorEditorPanel = new ColorEditorPanel();
+    this.colorEditorPanel = new ColorEditorPanel();
     this.anchorPositionPanel = new AnchorPositionPanel();
 
     editor.addPropertyChangeListener(editor.SELECTED_STOP_CHANGED, new PropertyChangeListener() {
       public void propertyChange(final PropertyChangeEvent e) {
         final Gradient.Stop selectedStop = editor.getSelectedStop();
-        ColorEditorPanel.setColor(selectedStop == null ? null : selectedStop.getColor());
+        colorEditorPanel.setColor(selectedStop == null ? null : selectedStop.getColor());
         anchorPositionPanel.setPosition(selectedStop == null ? null : selectedStop.getPosition());
       }
     });
 
-    ColorEditorPanel.addPropertyChangeListener(ColorEditorPanel.COLOR_CHANGED, new PropertyChangeListener() {
+    colorEditorPanel.addPropertyChangeListener(ColorEditorPanel.COLOR_CHANGED, new PropertyChangeListener() {
       public void propertyChange(final PropertyChangeEvent e) {
-        final Color newColor = ColorEditorPanel.getColor();
+        final Color newColor = colorEditorPanel.getColor();
         final Gradient.Stop selectedStop = editor.getSelectedStop();
         if (selectedStop != null) {
           selectedStop.setColor(newColor);
@@ -99,7 +99,7 @@ public class GradientPanel extends JPanel {
 
     final JPanel anchorPanel = new JPanel(new GridBagLayout());
     final EasyGBC c = new EasyGBC();
-    anchorPanel.add(ColorEditorPanel, c);
+    anchorPanel.add(colorEditorPanel, c);
     anchorPanel.add(anchorPositionPanel, c.anchor("w").down().insets(10, 0, 0, 0));
 
     gradientPositionEditor.setBorder(BorderFactory.createLineBorder(new Color(0x858585), 1));
