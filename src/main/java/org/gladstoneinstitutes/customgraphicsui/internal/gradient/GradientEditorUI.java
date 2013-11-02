@@ -15,8 +15,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.Path2D;
 import java.awt.Insets;
-import java.awt.TexturePaint;
-import java.awt.image.BufferedImage;
+
+import org.gladstoneinstitutes.customgraphicsui.internal.util.ColorPanel;
 
 public class GradientEditorUI extends ComponentUI {
   final GradientEditor editor;
@@ -43,7 +43,7 @@ public class GradientEditorUI extends ComponentUI {
     updateGradientRegion();
 
     // paint background pattern
-    g2d.setPaint(checkeredPaint());
+    g2d.setPaint(ColorPanel.checkeredPaint());
     g2d.fill(gradientRegion);
 
     // paint up to the first stop
@@ -246,26 +246,6 @@ public class GradientEditorUI extends ComponentUI {
       g.setColor(new Color(knobColor.getRGB())); // ignore alpha channel
       g.fill(colorFillPath.offset(x, y));
     }
-  }
-
-  private static TexturePaint BKGND_PAINT = null;
-
-  /**
-   * Return checkered pattern used to depict transparency like in Photoshop.
-   */
-  public static TexturePaint checkeredPaint() {
-    if (BKGND_PAINT == null) {
-      final int d = 20;
-      final BufferedImage img = new BufferedImage(d, d, BufferedImage.TYPE_INT_RGB);
-      final Graphics2D g2d = img.createGraphics();
-      g2d.setColor(new Color(0xf2f2f2));
-      g2d.fillRect(0, 0, d, d);
-      g2d.setColor(new Color(0xcccccc));
-      g2d.fillRect(0, 0, d / 2, d / 2);
-      g2d.fillRect(d / 2, d / 2, d, d);
-      BKGND_PAINT = new TexturePaint(img, new Rectangle2D.Float(0, 0, d, d));
-    }
-    return BKGND_PAINT;
   }
 }
 

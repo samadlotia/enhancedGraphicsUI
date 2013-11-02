@@ -23,9 +23,10 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 
 import org.gladstoneinstitutes.customgraphicsui.internal.CustomGraphicsFactoryManager;
+import org.gladstoneinstitutes.customgraphicsui.internal.util.ColorPanel;
 
 class GradientOrientationEditorUI extends ComponentUI {
-  static final Paint        BKGND_PAINT           = GradientEditorUI.checkeredPaint();
+  static final Paint        BKGND_PAINT           = ColorPanel.checkeredPaint();
   static final float        BOX_FRACTION_SIZE     = 0.7f;
   static final Color        BOX_BORDER_COLOR      = new Color(0x8A8A8A);
   static final float        BOX_BORDER_THICKNESS  = 2.5f;

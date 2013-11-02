@@ -3,6 +3,7 @@ package org.gladstoneinstitutes.customgraphicsui.internal.chart;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.FlowLayout;
+import java.awt.Color;
 import org.gladstoneinstitutes.customgraphicsui.internal.util.EasyGBC;
 
 import javax.swing.JPanel;
@@ -29,6 +30,9 @@ import org.cytoscape.view.model.View;
 class HeatStripSubpanel extends ChartSubpanel {
   final NumericAttributesTable attrsTable = new NumericAttributesTable();
   final JCheckBox showLabelsCheckBox = new JCheckBox("Labels");
+  Color negativeColor = Color.CYAN;
+  Color zeroColor = Color.BLACK;
+  Color positiveColor = Color.YELLOW;
 
   public HeatStripSubpanel() {
     super.setLayout(new GridBagLayout());
