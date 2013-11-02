@@ -71,8 +71,9 @@ public class ChartPanel extends JPanel {
     final JPanel subpanelsPanel = new JPanel(cardLayout);
     for (final ChartSubpanel subpanel : Arrays.asList(
         new BarChartSubpanel(),
-        new PieChartSubpanel(),
-        new HeatStripSubpanel()
+        new HeatStripSubpanel(),
+        new LineChartSubpanel(),
+        new PieChartSubpanel()
       )) {
       subpanels.put(subpanel.getUserName(), subpanel);
       subpanelsPanel.add(subpanel, subpanel.getUserName());
@@ -90,7 +91,7 @@ public class ChartPanel extends JPanel {
     }
     typeGroup.getElements().nextElement().setSelected(true); // select the first panel's button
 
-    preview.setBorder(BorderFactory.createLineBorder(new Color(0x858585), 1));
+    //preview.setBorder(BorderFactory.createLineBorder(new Color(0x858585), 1));
 
     final EasyGBC c = new EasyGBC();
     super.add(preview, c.spanV(2).expandHV().insets(10, 10, 10, 0));
@@ -127,7 +128,7 @@ class ChartPreview extends JComponent {
   public void assignCg(final String cgName, final String cgString) {
     this.factory = cgMgr.getFactory(cgName);
     this.cgString = cgString;
-    System.out.println("cgString: " + cgString);
+    //System.out.println("cgString: " + cgString);
     super.repaint();
   }
 
