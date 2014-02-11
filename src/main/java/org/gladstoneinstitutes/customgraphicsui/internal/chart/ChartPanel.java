@@ -8,12 +8,14 @@ import java.util.Arrays;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.CardLayout;
+import java.awt.Font;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Color;
 import java.awt.Paint;
 import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.RenderingHints;
 import java.awt.Insets;
@@ -26,6 +28,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JComponent;
 import javax.swing.JRadioButton;
 import javax.swing.JLabel;
+import javax.swing.JSplitPane;
 import javax.swing.ButtonGroup;
 import javax.swing.BorderFactory;
 
@@ -58,7 +61,6 @@ public class ChartPanel extends JPanel {
     preview = new ChartPreview(cgMgr);
 
     final JPanel typePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-    typePanel.add(new JLabel("Type: "));
     final ButtonGroup typeGroup = new ButtonGroup();
     final PropertyChangeListener cgUpdater = new PropertyChangeListener() {
       public void propertyChange(final PropertyChangeEvent e) {
@@ -91,12 +93,13 @@ public class ChartPanel extends JPanel {
     }
     typeGroup.getElements().nextElement().setSelected(true); // select the first panel's button
 
-    //preview.setBorder(BorderFactory.createLineBorder(new Color(0x858585), 1));
-
     final EasyGBC c = new EasyGBC();
-    super.add(preview, c.spanV(2).expandHV().insets(10, 10, 10, 0));
-    super.add(typePanel, c.noSpan().right().noExpand().fillH().insets(10, 10, 0, 0));
-    super.add(subpanelsPanel, c.down().right().expandV().insets(0, 10, 10, 10));
+    final JPanel leftPanel = new JPanel(new GridBagLayout());
+    leftPanel.add(typePanel, c.expandH().insets(10, 10, 0, 0));
+    leftPanel.add(subpanelsPanel, c.noSpan().down().expandHV().insets(0, 10, 10, 10));
+
+    final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, preview);
+    super.add(splitPane, c.reset().expandHV());
   }
 
   public void setup(final CyNetworkView networkView, final View<CyNode> nodeView) {
@@ -109,6 +112,12 @@ public class ChartPanel extends JPanel {
 
 class ChartPreview extends JComponent {
   final CustomGraphicsFactoryManager cgMgr;
+
+  static final String NO_PREVIEW_TEXT = "No Preview";
+  static final Color NO_PREVIEW_COLOR = new Color(0xCFCFCF);
+  // allocate these only when needed in the newNoPreview() method
+  Shape noPreviewShape = null;
+  Rectangle2D.Float noPreviewBounds = null;
 
   CyNetworkView networkView = null;
   View<CyNode> nodeView = null;
@@ -136,57 +145,49 @@ class ChartPreview extends JComponent {
   final Rectangle2D.Float componentBounds = new Rectangle2D.Float();
   final Rectangle2D.Float chartBounds     = new Rectangle2D.Float();
   final Insets            insets = new Insets(0, 0, 0, 0);
-  final AffineTransform   at     = new AffineTransform();
 
   protected void paintComponent(Graphics g) {
-    if (networkView == null || nodeView == null || factory == null || cgString == null)
-      return;
-
-    // obtain the custom graphics
-    final CyCustomGraphics<? extends CustomGraphicLayer> customGraphics = factory.getInstance(cgString);
-    List<? extends CustomGraphicLayer> layers = null;
-    try {
-      layers = customGraphics.getLayers(networkView, nodeView);
-    } catch (Exception e) {
-      // we need to catch exceptions from the cg engine, otherwise
-      // the exception blows up the Swing event thread and messes up the UI
-      System.err.println("Custom graphics internal error:");
-      e.printStackTrace();
-    }
-    if (layers == null) // layers is null if the cg string is not acceptable or there's a bug in the cg string parser
-      return;
-    final float fit = customGraphics.getFitRatio();
-
       // setup g2d
     final Graphics2D g2d = (Graphics2D) g;
+    final AffineTransform originalAt = g2d.getTransform();
+    final Stroke originalStroke = g2d.getStroke();
     g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-      // calculate componentBounds -- the rect wherein the chart is painted
-    super.getInsets(insets);
-    componentBounds.setRect(insets.left, insets.top, super.getWidth() - insets.left - insets.right, super.getHeight() - insets.top - insets.bottom);
+    updateComponentBounds();
 
-      // calculate chartBounds -- the rect that's a union of each chart layer's shape boundaries
-    chartBounds.setRect(0.0, 0.0, 0.0, 0.0);
-    for (final CustomGraphicLayer layer : layers) {
-      final PaintedShape ps = (PaintedShape) layer;
-      final Shape shape = ps.getShape();
-      chartBounds.add(shape.getBounds2D());
+    // obtain the custom graphics
+    CyCustomGraphics<? extends CustomGraphicLayer> customGraphics = null;
+    List<? extends CustomGraphicLayer> layers = null;
+    if (networkView != null && nodeView != null && factory != null && cgString != null) {
+      try {
+        customGraphics = factory.getInstance(cgString);
+        layers = customGraphics.getLayers(networkView, nodeView);
+      } catch (Exception e) {
+        // we need to catch exceptions from the cg engine, otherwise
+        // the exception blows up the Swing event thread and messes up the UI
+        System.err.println("Custom graphics internal error:");
+        e.printStackTrace();
+      }
     }
 
-      // transform g2d such that chartBounds is scaled and translated to fit exactly in the middle of componentBounds
-    final AffineTransform originalAt = g2d.getTransform();
-    double factor;
-    if (componentBounds.height / componentBounds.width > chartBounds.height / chartBounds.width) {
-      factor = componentBounds.width / chartBounds.width;
+    if (layers == null) { 
+      // layers is null if the cg string is not acceptable or there's a bug in the cg string parser
+      paintNoPreview(g2d);
     } else {
-      factor = componentBounds.height / chartBounds.height;
+      // we have some custom graphics! now let's paint it
+      final float fit = customGraphics.getFitRatio();
+      paintCgLayers(g2d, layers, fit);
     }
-    factor *= fit;
-    g2d.translate(componentBounds.x + componentBounds.width / 2.0, componentBounds.y + componentBounds.height / 2.0);
-    g2d.scale(factor, factor);
-    g2d.translate(-chartBounds.x - chartBounds.width / 2.0, -chartBounds.y - chartBounds.height / 2.0);
 
-      // paint each layer
+      // reset g2d so that other things being painted with this g2d won't get messed up like component border
+    g2d.setTransform(originalAt);
+    g2d.setStroke(originalStroke);
+  }
+
+  private void paintCgLayers(final Graphics2D g2d, final Iterable<? extends CustomGraphicLayer> layers, final double fit) {
+    calculateChartBounds(chartBounds, layers);
+    centerBounds(g2d, chartBounds, fit);
+
     for (final CustomGraphicLayer layer : layers) {
       final PaintedShape ps = (PaintedShape) layer;
       final Shape shape = ps.getShape();
@@ -201,8 +202,64 @@ class ChartPreview extends JComponent {
       g2d.setPaint(ps.getPaint());
       g2d.fill(shape);
     }
+  }
 
-      // reset the transform so that other things being painted with this g2d won't get messed up like component border
-    g2d.setTransform(originalAt);
+  /**
+   * Calculate the component bounds, the rect wherein the chart is painted
+   */
+  private void updateComponentBounds() {
+    super.getInsets(insets);
+    componentBounds.setRect(insets.left, insets.top, super.getWidth() - insets.left - insets.right, super.getHeight() - insets.top - insets.bottom);
+  }
+
+  /**
+   * Calculate chart bounds, the rect that's a union of each chart layer's shape boundaries
+   */
+  private void calculateChartBounds(final Rectangle2D.Float chartBounds, final Iterable<? extends CustomGraphicLayer> layers) {
+    chartBounds.setRect(0.0, 0.0, 0.0, 0.0);
+    for (final CustomGraphicLayer layer : layers) {
+      final PaintedShape ps = (PaintedShape) layer;
+      final Shape shape = ps.getShape();
+      chartBounds.add(shape.getBounds2D());
+    }
+  }
+
+  /**
+   * Transform g2d such that contentBounds is scaled and translated to fit exactly in the middle of componentBounds
+   */
+  private void centerBounds(final Graphics2D g2d, final Rectangle2D.Float contentBounds, final double fit) {
+    final float componentRatio = componentBounds.height / componentBounds.width;
+    final float contentRatio = contentBounds.height / contentBounds.width;
+    double factor = 1.0;
+    if (componentRatio  > contentRatio) {
+      factor = componentBounds.width / chartBounds.width;
+    } else {
+      factor = componentBounds.height / chartBounds.height;
+    }
+    factor *= fit;
+    g2d.translate(componentBounds.x + componentBounds.width / 2.0, componentBounds.y + componentBounds.height / 2.0);
+    g2d.scale(factor, factor);
+    g2d.translate(-contentBounds.x - contentBounds.width / 2.0, -contentBounds.y - contentBounds.height / 2.0);
+  }
+
+  private void newNoPreviewShape() {
+    final Font f = getFont();
+    noPreviewShape = f.createGlyphVector(getFontMetrics(f).getFontRenderContext(), NO_PREVIEW_TEXT).getOutline();
+    final Rectangle2D bounds = noPreviewShape.getBounds2D();
+    noPreviewBounds = new Rectangle2D.Float();
+    noPreviewBounds.x = (float) bounds.getX();
+    noPreviewBounds.y = (float) bounds.getY();
+    noPreviewBounds.width = (float) bounds.getWidth();
+    noPreviewBounds.height = (float) bounds.getHeight();
+  }
+
+  private void paintNoPreview(final Graphics2D g2d) {
+    if (noPreviewShape == null)
+      newNoPreviewShape();
+    System.out.println("No preview invoked: " + noPreviewBounds);
+    updateComponentBounds();
+    centerBounds(g2d, noPreviewBounds, 1.0);
+    g2d.setPaint(NO_PREVIEW_COLOR);
+    g2d.fill(noPreviewShape);
   }
 }

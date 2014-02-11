@@ -49,17 +49,17 @@ public class ColorEditorPanel extends JPanel {
     final EasyGBC c = new EasyGBC();
     super.add(well, c.down().spanV(4).anchor("nw").insets(0, 0, 0, 10));
     super.add(new JLabel("R:"), c.noSpan().right().noInsets());
-    super.add(sliderR, c.right());
-    super.add(fieldR, c.right());
+    super.add(sliderR, c.expandH().right());
+    super.add(fieldR, c.noExpand().right());
     super.add(new JLabel("G:"), c.down().right());
-    super.add(sliderG, c.right());
-    super.add(fieldG, c.right());
+    super.add(sliderG, c.expandH().right());
+    super.add(fieldG, c.noExpand().right());
     super.add(new JLabel("B:"), c.down().right());
-    super.add(sliderB, c.right());
-    super.add(fieldB, c.right());
+    super.add(sliderB, c.expandH().right());
+    super.add(fieldB, c.noExpand().right());
     super.add(new JLabel("A:"), c.down().right());
-    super.add(sliderA, c.right());
-    super.add(fieldA, c.right());
+    super.add(sliderA, c.expandH().right());
+    super.add(fieldA, c.noExpand().right());
 
   }
 
