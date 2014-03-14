@@ -84,7 +84,6 @@ public class ChartPanel extends JPanel {
       subpanels.put(subpanel.getUserName(), subpanel);
       subpanelsPanel.add(subpanel, subpanel.getUserName());
       subpanel.addPropertyChangeListener(cgUpdater);
-      //final JRadioButton button = new JRadioButton(subpanel.getUserName());
       final JToggleButton button = new JToggleButton(subpanel.getUserName());
       typeGroup.add(button);
       typePanel.add(button);
@@ -96,7 +95,6 @@ public class ChartPanel extends JPanel {
         }
       });
     }
-    //typeGroup.getElements().nextElement().setSelected(true); // select the first panel's button
 
     final EasyGBC c = new EasyGBC();
     final JPanel leftPanel = new JPanel(new GridBagLayout());
