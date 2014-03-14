@@ -21,6 +21,7 @@ import java.awt.RenderingHints;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 
 import javax.swing.JPanel;
@@ -114,13 +115,17 @@ class ChartPreview extends JComponent {
   final CustomGraphicsFactoryManager cgMgr;
 
   static final String NO_PREVIEW_TEXT = "No Preview";
-  static final Color NO_PREVIEW_COLOR = new Color(0xCFCFCF);
+  static final Color NO_PREVIEW_COLOR = new Color(0xB3B3B3);
+
   // allocate these only when needed in the newNoPreview() method
   Shape noPreviewShape = null;
   Rectangle2D.Float noPreviewBounds = null;
 
+  // these get filled in by the setup() method
   CyNetworkView networkView = null;
   View<CyNode> nodeView = null;
+
+  // these get filld in by the assignCg() method
   CyCustomGraphicsFactory<? extends CustomGraphicLayer> factory = null;
   String cgString = null;
 
@@ -165,8 +170,10 @@ class ChartPreview extends JComponent {
       } catch (Exception e) {
         // we need to catch exceptions from the cg engine, otherwise
         // the exception blows up the Swing event thread and messes up the UI
+        /*
         System.err.println("Custom graphics internal error:");
         e.printStackTrace();
+        */
       }
     }
 
@@ -228,13 +235,17 @@ class ChartPreview extends JComponent {
    * Transform g2d such that contentBounds is scaled and translated to fit exactly in the middle of componentBounds
    */
   private void centerBounds(final Graphics2D g2d, final Rectangle2D.Float contentBounds, final double fit) {
-    final float componentRatio = componentBounds.height / componentBounds.width;
-    final float contentRatio = contentBounds.height / contentBounds.width;
     double factor = 1.0;
-    if (componentRatio  > contentRatio) {
-      factor = componentBounds.width / chartBounds.width;
+    if (contentBounds.height > contentBounds.width) {
+      factor = componentBounds.height / contentBounds.height;
+      if (factor * contentBounds.width > componentBounds.width) {
+        factor *= componentBounds.width / (factor * contentBounds.width);
+      }
     } else {
-      factor = componentBounds.height / chartBounds.height;
+      factor = componentBounds.width / contentBounds.width;
+      if (factor * contentBounds.height > componentBounds.height) {
+        factor *= componentBounds.height / (factor * contentBounds.height);
+      }
     }
     factor *= fit;
     g2d.translate(componentBounds.x + componentBounds.width / 2.0, componentBounds.y + componentBounds.height / 2.0);
@@ -244,21 +255,17 @@ class ChartPreview extends JComponent {
 
   private void newNoPreviewShape() {
     final Font f = getFont();
-    noPreviewShape = f.createGlyphVector(getFontMetrics(f).getFontRenderContext(), NO_PREVIEW_TEXT).getOutline();
-    final Rectangle2D bounds = noPreviewShape.getBounds2D();
+    final Shape textShape = f.createGlyphVector(getFontMetrics(f).getFontRenderContext(), NO_PREVIEW_TEXT).getOutline();
+    noPreviewShape = new Path2D.Float(textShape, AffineTransform.getRotateInstance(-Math.PI / 4.0));
     noPreviewBounds = new Rectangle2D.Float();
-    noPreviewBounds.x = (float) bounds.getX();
-    noPreviewBounds.y = (float) bounds.getY();
-    noPreviewBounds.width = (float) bounds.getWidth();
-    noPreviewBounds.height = (float) bounds.getHeight();
+    noPreviewBounds.add(noPreviewShape.getBounds2D());
   }
 
   private void paintNoPreview(final Graphics2D g2d) {
     if (noPreviewShape == null)
       newNoPreviewShape();
-    System.out.println("No preview invoked: " + noPreviewBounds);
     updateComponentBounds();
-    centerBounds(g2d, noPreviewBounds, 1.0);
+    centerBounds(g2d, noPreviewBounds, 0.7);
     g2d.setPaint(NO_PREVIEW_COLOR);
     g2d.fill(noPreviewShape);
   }
