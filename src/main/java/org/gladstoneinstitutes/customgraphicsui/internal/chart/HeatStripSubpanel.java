@@ -1,15 +1,21 @@
 package org.gladstoneinstitutes.customgraphicsui.internal.chart;
 
+import java.awt.Graphics;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.FlowLayout;
 import java.awt.Color;
 
+import java.awt.image.BufferedImage;
+
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JCheckBox;
 import javax.swing.JRadioButton;
+import javax.swing.JToggleButton;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.JSlider;
@@ -73,20 +79,26 @@ class HeatStripSubpanel extends ChartSubpanel {
     separationPanel.add(separationSpinner);
 
 
-    final JRadioButton positiveButton = new JRadioButton("Positive");
-    final JRadioButton zeroButton = new JRadioButton("Zero");
-    final JRadioButton negativeButton = new JRadioButton("Negative");
+    final JToggleButton positiveButton = new JToggleButton("Positive", newColorIcon(positiveColor));
+    final JToggleButton zeroButton = new JToggleButton("Zero", newColorIcon(zeroColor));
+    final JToggleButton negativeButton = new JToggleButton("Negative", newColorIcon(negativeColor));
 
     final ColorEditorPanel colorEditorPanel = new ColorEditorPanel();
     colorEditorPanel.addPropertyChangeListener(ColorEditorPanel.COLOR_CHANGED, new PropertyChangeListener() {
       public void propertyChange(final PropertyChangeEvent e) {
         final Color newColor = colorEditorPanel.getColor();
-        if (positiveButton.isSelected())
+        JToggleButton button = null;
+        if (positiveButton.isSelected()) {
           positiveColor = newColor;
-        else if (zeroButton.isSelected())
+          button = positiveButton;
+        } else if (zeroButton.isSelected()) {
           zeroColor = newColor;
-        else if (negativeButton.isSelected())
+          button = zeroButton;
+        } else if (negativeButton.isSelected()) {
           negativeColor = newColor;
+          button = negativeButton;
+        }
+        button.setIcon(newColorIcon(newColor));
         HeatStripSubpanel.this.firePropertyChange(CG_CHANGED, null, null);
       }
     });
@@ -126,7 +138,7 @@ class HeatStripSubpanel extends ChartSubpanel {
     final EasyGBC c = new EasyGBC();
     super.add(new JScrollPane(attrsTable), c.reset().expandHV());
     super.add(optionsPanel, c.anchor("nw").down().noExpand());
-    super.add(colorEditorPanel, c.down().expandHV());
+    super.add(colorEditorPanel, c.down().expandH());
   }
 
   public String getUserName() {
@@ -157,5 +169,22 @@ class HeatStripSubpanel extends ChartSubpanel {
 
   public void setup(final CyNetworkView networkView, final View<CyNode> nodeView) {
     attrsTable.forCyTable(networkView.getModel().getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS));
+  }
+
+  static final int COLOR_ICON_W = 20;
+  static final int COLOR_ICON_H = 14;
+  static final int COLOR_ICON_ARC = 7;
+  static Icon newColorIcon(final Color color) {
+    final BufferedImage img = new BufferedImage(COLOR_ICON_W, COLOR_ICON_H, BufferedImage.TYPE_INT_ARGB);
+    final Graphics g = img.createGraphics();
+    final int x = 1;
+    final int y = 1;
+    final int w = COLOR_ICON_W - 2;
+    final int h = COLOR_ICON_H - 2;
+    g.setColor(color);
+    g.fillRoundRect(x, y, w, h, COLOR_ICON_ARC, COLOR_ICON_ARC);
+    g.setColor(Color.BLACK);
+    g.drawRoundRect(x, y, w, h, COLOR_ICON_ARC, COLOR_ICON_ARC);
+    return new ImageIcon(img);
   }
 }

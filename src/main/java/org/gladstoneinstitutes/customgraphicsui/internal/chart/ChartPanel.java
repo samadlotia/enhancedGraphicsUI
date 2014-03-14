@@ -100,7 +100,7 @@ public class ChartPanel extends JPanel {
 
     final EasyGBC c = new EasyGBC();
     final JPanel leftPanel = new JPanel(new GridBagLayout());
-    leftPanel.add(typePanel, c.expandH().insets(10, 0, 0, 0));
+    leftPanel.add(typePanel, c.expandH().insets(0, 0, 0, 0));
     leftPanel.add(subpanelsPanel, c.noSpan().down().expandHV().insets(0, 10, 10, 10));
 
     final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, preview);
