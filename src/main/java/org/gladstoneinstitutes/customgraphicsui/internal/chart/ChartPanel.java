@@ -28,6 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JComponent;
 import javax.swing.JRadioButton;
+import javax.swing.JToggleButton;
 import javax.swing.JLabel;
 import javax.swing.JSplitPane;
 import javax.swing.ButtonGroup;
@@ -72,6 +73,8 @@ public class ChartPanel extends JPanel {
 
     final CardLayout cardLayout = new CardLayout();
     final JPanel subpanelsPanel = new JPanel(cardLayout);
+    subpanelsPanel.add(new JPanel(), "empty");
+    cardLayout.show(subpanelsPanel, "empty");
     for (final ChartSubpanel subpanel : Arrays.asList(
         new BarChartSubpanel(),
         new HeatStripSubpanel(),
@@ -81,7 +84,8 @@ public class ChartPanel extends JPanel {
       subpanels.put(subpanel.getUserName(), subpanel);
       subpanelsPanel.add(subpanel, subpanel.getUserName());
       subpanel.addPropertyChangeListener(cgUpdater);
-      final JRadioButton button = new JRadioButton(subpanel.getUserName());
+      //final JRadioButton button = new JRadioButton(subpanel.getUserName());
+      final JToggleButton button = new JToggleButton(subpanel.getUserName());
       typeGroup.add(button);
       typePanel.add(button);
       button.addActionListener(new ActionListener() {
@@ -92,11 +96,11 @@ public class ChartPanel extends JPanel {
         }
       });
     }
-    typeGroup.getElements().nextElement().setSelected(true); // select the first panel's button
+    //typeGroup.getElements().nextElement().setSelected(true); // select the first panel's button
 
     final EasyGBC c = new EasyGBC();
     final JPanel leftPanel = new JPanel(new GridBagLayout());
-    leftPanel.add(typePanel, c.expandH().insets(10, 10, 0, 0));
+    leftPanel.add(typePanel, c.expandH().insets(10, 0, 0, 0));
     leftPanel.add(subpanelsPanel, c.noSpan().down().expandHV().insets(0, 10, 10, 10));
 
     final JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, preview);
