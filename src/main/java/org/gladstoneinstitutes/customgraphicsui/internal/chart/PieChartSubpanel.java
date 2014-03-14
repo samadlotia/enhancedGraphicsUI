@@ -27,7 +27,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 
 class PieChartSubpanel extends ChartSubpanel {
-  final NumericAttributesWithColorsTable attrsTable = new NumericAttributesWithColorsTable(true);
+  final NumericAttrsTable attrsTable = new NumericAttrsTable(true);
   final JCheckBox showLabelsCheckBox = new JCheckBox("Labels: ");
   final JSpinner labelSizeSpinner = new JSpinner(new SpinnerNumberModel(8, 1, 100, 1));
   final JSlider arcStartSlider = new JSlider(0, 360, 0);

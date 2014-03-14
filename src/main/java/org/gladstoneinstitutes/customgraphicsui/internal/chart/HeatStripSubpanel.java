@@ -44,7 +44,7 @@ import org.gladstoneinstitutes.customgraphicsui.internal.util.Strings;
 import org.gladstoneinstitutes.customgraphicsui.internal.util.ColorEditorPanel;
 
 class HeatStripSubpanel extends ChartSubpanel {
-  final NumericAttributesWithColorsTable attrsTable = new NumericAttributesWithColorsTable(false);
+  final NumericAttrsTable attrsTable = new NumericAttrsTable(false);
   final JCheckBox showLabelsCheckBox = new JCheckBox("Labels");
   Color negativeColor = Color.CYAN;
   Color zeroColor     = Color.BLACK;
@@ -175,7 +175,6 @@ class HeatStripSubpanel extends ChartSubpanel {
 
   static final int COLOR_ICON_W = 20;
   static final int COLOR_ICON_H = 14;
-  static final int COLOR_ICON_ARC = 7;
   static Icon newColorIcon(final Color color) {
     final BufferedImage img = new BufferedImage(COLOR_ICON_W, COLOR_ICON_H, BufferedImage.TYPE_INT_ARGB);
     final Graphics2D g2d = img.createGraphics();

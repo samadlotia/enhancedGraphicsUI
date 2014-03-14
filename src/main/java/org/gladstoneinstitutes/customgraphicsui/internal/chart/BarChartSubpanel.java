@@ -26,7 +26,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 
 class BarChartSubpanel extends ChartSubpanel {
-  final NumericAttributesWithColorsTable attrsTable = new NumericAttributesWithColorsTable(true);
+  final NumericAttrsTable attrsTable = new NumericAttrsTable(true);
   final JCheckBox showLabelsCheckBox = new JCheckBox("Labels");
   final JSpinner separationSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
 

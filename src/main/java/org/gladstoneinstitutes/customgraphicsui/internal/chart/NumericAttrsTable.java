@@ -44,11 +44,11 @@ import org.gladstoneinstitutes.customgraphicsui.internal.util.EasyGBC;
 import org.gladstoneinstitutes.customgraphicsui.internal.util.Colors;
 import org.gladstoneinstitutes.customgraphicsui.internal.util.Strings;
 
-class NumericAttributesWithColorsTable extends JTable {
+class NumericAttrsTable extends JTable {
   final boolean showColorCol;
   final AttributeTableModel model = new AttributeTableModel();
 
-  public NumericAttributesWithColorsTable(final boolean showColorCol) {
+  public NumericAttrsTable(final boolean showColorCol) {
     this.showColorCol = showColorCol;
     super.setModel(model);
     
@@ -221,7 +221,7 @@ class NumericAttributesWithColorsTable extends JTable {
     final JCheckBox checkBox = new JCheckBox();
 
     public BooleanCellHandler() {
-      checkBox.setBackground(NumericAttributesWithColorsTable.super.getBackground());
+      checkBox.setBackground(NumericAttrsTable.super.getBackground());
       checkBox.setFocusPainted(false);
       checkBox.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
@@ -314,7 +314,7 @@ class NumericAttributesWithColorsTable extends JTable {
     }
 
     public Transferable createTransferable(JComponent c) {
-      return new StringSelection(Integer.toString(NumericAttributesWithColorsTable.this.getSelectedRow()));
+      return new StringSelection(Integer.toString(NumericAttrsTable.this.getSelectedRow()));
     }
 
     private Integer getRowIndexFromStringData(final TransferHandler.TransferSupport support) {
@@ -324,7 +324,7 @@ class NumericAttributesWithColorsTable extends JTable {
           continue;
         try {
           final Integer rowIndex = Integer.parseInt((String) transferable.getTransferData(flavor));
-          if (0 <= rowIndex && rowIndex < NumericAttributesWithColorsTable.this.getRowCount())
+          if (0 <= rowIndex && rowIndex < NumericAttrsTable.this.getRowCount())
             return rowIndex;
         } catch (Exception e) {}
       }
@@ -348,7 +348,7 @@ class NumericAttributesWithColorsTable extends JTable {
         targetRow -= 1;
 
       model.move(sourceRow, targetRow);
-      NumericAttributesWithColorsTable.this.setRowSelectionInterval(targetRow, targetRow);
+      NumericAttrsTable.this.setRowSelectionInterval(targetRow, targetRow);
       return true;
     }
   }
