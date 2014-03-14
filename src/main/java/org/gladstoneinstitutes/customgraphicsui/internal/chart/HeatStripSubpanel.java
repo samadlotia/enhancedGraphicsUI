@@ -1,10 +1,12 @@
 package org.gladstoneinstitutes.customgraphicsui.internal.chart;
 
-import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.FlowLayout;
 import java.awt.Color;
+import java.awt.BasicStroke;
 
 import java.awt.image.BufferedImage;
 
@@ -42,7 +44,7 @@ import org.gladstoneinstitutes.customgraphicsui.internal.util.Strings;
 import org.gladstoneinstitutes.customgraphicsui.internal.util.ColorEditorPanel;
 
 class HeatStripSubpanel extends ChartSubpanel {
-  final NumericAttributesTable attrsTable = new NumericAttributesTable();
+  final NumericAttributesWithColorsTable attrsTable = new NumericAttributesWithColorsTable(false);
   final JCheckBox showLabelsCheckBox = new JCheckBox("Labels");
   Color negativeColor = Color.CYAN;
   Color zeroColor     = Color.BLACK;
@@ -176,15 +178,16 @@ class HeatStripSubpanel extends ChartSubpanel {
   static final int COLOR_ICON_ARC = 7;
   static Icon newColorIcon(final Color color) {
     final BufferedImage img = new BufferedImage(COLOR_ICON_W, COLOR_ICON_H, BufferedImage.TYPE_INT_ARGB);
-    final Graphics g = img.createGraphics();
+    final Graphics2D g2d = img.createGraphics();
+    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     final int x = 1;
     final int y = 1;
     final int w = COLOR_ICON_W - 2;
     final int h = COLOR_ICON_H - 2;
-    g.setColor(color);
-    g.fillRoundRect(x, y, w, h, COLOR_ICON_ARC, COLOR_ICON_ARC);
-    g.setColor(Color.BLACK);
-    g.drawRoundRect(x, y, w, h, COLOR_ICON_ARC, COLOR_ICON_ARC);
+    g2d.setColor(color);
+    g2d.fillRect(x, y, w, h);
+    g2d.setColor(Color.BLACK);
+    g2d.drawRect(x, y, w, h);
     return new ImageIcon(img);
   }
 }

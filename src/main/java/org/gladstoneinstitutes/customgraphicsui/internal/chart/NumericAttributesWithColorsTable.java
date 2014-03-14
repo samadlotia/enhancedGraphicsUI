@@ -45,9 +45,11 @@ import org.gladstoneinstitutes.customgraphicsui.internal.util.Colors;
 import org.gladstoneinstitutes.customgraphicsui.internal.util.Strings;
 
 class NumericAttributesWithColorsTable extends JTable {
+  final boolean showColorCol;
   final AttributeTableModel model = new AttributeTableModel();
 
-  public NumericAttributesWithColorsTable() {
+  public NumericAttributesWithColorsTable(final boolean showColorCol) {
+    this.showColorCol = showColorCol;
     super.setModel(model);
     
     final TableColumn activeCol = super.getColumnModel().getColumn(0);
@@ -56,11 +58,13 @@ class NumericAttributesWithColorsTable extends JTable {
     activeCol.setMaxWidth(35);
     activeCol.setMinWidth(35);
 
-    final TableColumn colorCol = super.getColumnModel().getColumn(3);
-    colorCol.setCellRenderer(new ColorCellRenderer());
-    colorCol.setCellEditor(new ColorCellEditor());
-    colorCol.setMaxWidth(50);
-    colorCol.setMinWidth(50);
+    if (showColorCol) {
+      final TableColumn colorCol = super.getColumnModel().getColumn(3);
+      colorCol.setCellRenderer(new ColorCellRenderer());
+      colorCol.setCellEditor(new ColorCellEditor());
+      colorCol.setMaxWidth(50);
+      colorCol.setMinWidth(50);
+    }
 
     super.setDragEnabled(true);
     super.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -76,31 +80,25 @@ class NumericAttributesWithColorsTable extends JTable {
     model.appendCgString(buffer);
   }
 
-  static class AttributeRow {
-    public boolean enabled = false;
-    public CyColumn attribute;
-    public String label;
-    public Color color;
-  }
-
-  static class AttributeTableModel extends AbstractTableModel {
-    final List<AttributeRow> rows = new ArrayList<AttributeRow>();
+  class AttributeTableModel extends AbstractTableModel {
+    final List<NumericAttr> rows = new ArrayList<NumericAttr>();
 
     public void appendCgString(final StringBuffer buffer) {
+      // count the number of enabled rows
       int count = 0;
       for (int i = 0; i < rows.size(); i++) {
-        final AttributeRow row = rows.get(i);
-        if (row.enabled)
+        final NumericAttr row = rows.get(i);
+        if (row.isEnabled())
           count++;
       }
-      if (count < 2)
+      if (count < 2) // don't fill in the cg string if we don't have enough enabled rows
         return;
 
       buffer.append("attributelist=\"");
       for (int i = 0; i < rows.size(); i++) {
-        final AttributeRow row = rows.get(i);
-        if (!row.enabled) continue;
-        buffer.append(row.attribute.getName());
+        final NumericAttr row = rows.get(i);
+        if (!row.isEnabled()) continue;
+        buffer.append(row.getColumn().getName());
         buffer.append(',');
       }
       buffer.deleteCharAt(buffer.length() - 1);
@@ -108,43 +106,37 @@ class NumericAttributesWithColorsTable extends JTable {
 
       buffer.append("labellist=\"");
       for (int i = 0; i < rows.size(); i++) {
-        final AttributeRow row = rows.get(i);
-        if (!row.enabled) continue;
-        buffer.append(row.label);
+        final NumericAttr row = rows.get(i);
+        if (!row.isEnabled()) continue;
+        buffer.append(row.getLabel());
         buffer.append(',');
       }
       buffer.deleteCharAt(buffer.length() - 1);
       buffer.append("\" ");
 
-      buffer.append("colorlist=\"");
-      for (int i = 0; i < rows.size(); i++) {
-        final AttributeRow row = rows.get(i);
-        if (!row.enabled) continue;
-        buffer.append(String.format("#%02x%02x%02x", row.color.getRed(), row.color.getGreen(), row.color.getBlue()));
-        buffer.append(',');
+      if (showColorCol) {
+        buffer.append("colorlist=\"");
+        for (int i = 0; i < rows.size(); i++) {
+          final NumericAttr row = rows.get(i);
+          if (!row.isEnabled()) continue;
+          buffer.append(row.getColorHex());
+          buffer.append(',');
+        }
+        buffer.deleteCharAt(buffer.length() - 1);
+        buffer.append("\" ");
       }
-      buffer.deleteCharAt(buffer.length() - 1);
-      buffer.append("\" ");
     }
 
     public void forCyTable(final CyTable table) {
-      rows.clear();
-      for (final CyColumn col : table.getColumns()) {
-        final Class<?> type = col.getType();
-        if (type.getSuperclass() != Number.class)
-          continue;
-        final AttributeRow row = new AttributeRow();
-        row.enabled = false;
-        row.attribute = col;
-        row.label = col.getName();
-        row.color = null;
-        rows.add(row);
-      }
+      NumericAttr.fillInList(table, rows);
       super.fireTableRowsInserted(0, rows.size() - 1);
     }
 
     public int getColumnCount() {
-      return 4;
+      if (showColorCol)
+        return 4;
+      else
+        return 3;
     }
 
     public int getRowCount() {
@@ -179,34 +171,34 @@ class NumericAttributesWithColorsTable extends JTable {
     }
 
     public Object getValueAt(int row, int col) {
-      final AttributeRow attrRow = rows.get(row);
+      final NumericAttr attrRow = rows.get(row);
       switch (col) {
-        case 0: return attrRow.enabled;
-        case 1: return attrRow.attribute.getName();
-        case 2: return attrRow.label;
-        case 3: return attrRow.color;
+        case 0: return attrRow.isEnabled();
+        case 1: return attrRow.getColumn().getName();
+        case 2: return attrRow.getLabel();
+        case 3: return attrRow.getColor();
         default: return null;
       }
     }
 
     int colorIndex = 0;
     public void setValueAt(Object val, int row, int col) {
-      final AttributeRow attrRow = rows.get(row);
+      final NumericAttr attrRow = rows.get(row);
       switch (col) {
         case 0:
-          attrRow.enabled = (Boolean) val;
-          if (attrRow.enabled && attrRow.color == null) {
-            attrRow.color = Colors.getColor(colorIndex++);
+          attrRow.setEnabled((Boolean) val);
+          if (attrRow.isEnabled() && attrRow.getColor() == null) {
+            attrRow.setColor(Colors.getColor(colorIndex++));
             super.fireTableChanged(new TableModelEvent(this, row, 3));
           }
           break;
         case 2:
-          attrRow.label = (String) val;
+          attrRow.setLabel((String) val);
           break;
         case 3:
-          attrRow.color = (Color) val;
-          if (!attrRow.enabled && val != null) {
-            attrRow.enabled = true;
+          attrRow.setColor((Color) val);
+          if (!attrRow.isEnabled() && val != null) {
+            attrRow.setEnabled(true);
             super.fireTableChanged(new TableModelEvent(this, row, 0));
           }
           break;

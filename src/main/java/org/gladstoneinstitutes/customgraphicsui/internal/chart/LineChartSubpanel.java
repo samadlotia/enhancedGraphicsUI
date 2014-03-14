@@ -26,7 +26,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 
 class LineChartSubpanel extends ChartSubpanel {
-  final NumericAttributesWithColorsTable attrsTable = new NumericAttributesWithColorsTable();
+  final NumericAttributesWithColorsTable attrsTable = new NumericAttributesWithColorsTable(true);
   final JSpinner lineWidthSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
 
   public LineChartSubpanel() {
