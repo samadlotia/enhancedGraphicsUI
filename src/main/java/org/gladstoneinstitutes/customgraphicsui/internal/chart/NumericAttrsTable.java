@@ -47,8 +47,8 @@ import org.gladstoneinstitutes.customgraphicsui.internal.util.Strings;
 class NumericAttrsTable extends JTable {
   final NumericAttrsModel model;
 
-  public NumericAttrsTable(final boolean showColorCol) {
-    this.model = new NumericAttrsModel(showColorCol);
+  public NumericAttrsTable(final List<NumericAttr> rows, final boolean showColorCol) {
+    this.model = new NumericAttrsModel(rows, showColorCol);
     super.setModel(model);
     
     final TableColumn activeCol = super.getColumnModel().getColumn(0);

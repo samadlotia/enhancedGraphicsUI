@@ -1,5 +1,6 @@
 package org.gladstoneinstitutes.customgraphicsui.internal.chart;
 
+import java.util.List;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.FlowLayout;
@@ -27,14 +28,16 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 
 class PieChartSubpanel extends ChartSubpanel {
-  final NumericAttrsTable attrsTable = new NumericAttrsTable(true);
+  final NumericAttrsTable attrsTable;
   final JCheckBox showLabelsCheckBox = new JCheckBox("Labels: ");
   final JSpinner labelSizeSpinner = new JSpinner(new SpinnerNumberModel(8, 1, 100, 1));
   final JSlider arcStartSlider = new JSlider(0, 360, 0);
   final JSpinner arcStartSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 360, 45));
 
-  public PieChartSubpanel() {
+  public PieChartSubpanel(final List<NumericAttr> rows) {
     super.setLayout(new GridBagLayout());
+
+    attrsTable = new NumericAttrsTable(rows, true);
 
     attrsTable.getModel().addTableModelListener(new TableModelListener() {
       public void tableChanged(TableModelEvent e) {
@@ -110,7 +113,7 @@ class PieChartSubpanel extends ChartSubpanel {
     return buffer.toString();
   }
 
-  public void setup(final CyNetworkView networkView, final View<CyNode> nodeView) {
-    attrsTable.forCyTable(networkView.getModel().getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS));
+  public void refreshTable() {
+    ((NumericAttrsModel) attrsTable.getModel()).fireTableDataChanged();
   }
 }

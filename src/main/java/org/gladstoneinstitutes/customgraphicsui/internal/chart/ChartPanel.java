@@ -1,6 +1,7 @@
 package org.gladstoneinstitutes.customgraphicsui.internal.chart;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
@@ -55,6 +56,7 @@ import org.gladstoneinstitutes.customgraphicsui.internal.util.EasyGBC;
 
 public class ChartPanel extends JPanel {
   final ChartPreview preview;
+  final List<NumericAttr> numericAttrs = new ArrayList<NumericAttr>();
   final Map<String,ChartSubpanel> subpanels = new HashMap<String,ChartSubpanel>();
   ChartSubpanel currentSubpanel = null;
 
@@ -76,10 +78,10 @@ public class ChartPanel extends JPanel {
     subpanelsPanel.add(new JPanel(), "empty");
     cardLayout.show(subpanelsPanel, "empty");
     for (final ChartSubpanel subpanel : Arrays.asList(
-        new BarChartSubpanel(),
-        new HeatStripSubpanel(),
-        new LineChartSubpanel(),
-        new PieChartSubpanel()
+        new BarChartSubpanel(numericAttrs),
+        new HeatStripSubpanel(numericAttrs),
+        new LineChartSubpanel(numericAttrs),
+        new PieChartSubpanel(numericAttrs)
       )) {
       subpanels.put(subpanel.getUserName(), subpanel);
       subpanelsPanel.add(subpanel, subpanel.getUserName());
@@ -107,8 +109,9 @@ public class ChartPanel extends JPanel {
 
   public void setup(final CyNetworkView networkView, final View<CyNode> nodeView) {
     preview.setup(networkView, nodeView);
+    NumericAttr.fillInList(networkView.getModel().getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS), numericAttrs);
     for (final ChartSubpanel subpanel : subpanels.values()) {
-      subpanel.setup(networkView, nodeView);
+      subpanel.refreshTable();
     }
   }
 }

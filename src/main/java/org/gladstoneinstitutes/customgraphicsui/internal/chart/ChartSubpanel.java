@@ -9,8 +9,8 @@ import org.cytoscape.view.model.View;
 abstract class ChartSubpanel extends JPanel {
   public static final String CG_CHANGED = "cg changed";
 
-	public abstract String getCgName();
-	public abstract String buildCgString();
-	public abstract String getUserName();
-  public abstract void setup(final CyNetworkView networkView, final View<CyNode> nodeView);
+  public abstract String getCgName();
+  public abstract String buildCgString();
+  public abstract String getUserName();
+  public abstract void refreshTable();
 }

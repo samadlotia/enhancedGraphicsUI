@@ -20,17 +20,20 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 
+import java.util.List;
+
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 
 class BarChartSubpanel extends ChartSubpanel {
-  final NumericAttrsTable attrsTable = new NumericAttrsTable(true);
+  final NumericAttrsTable attrsTable;
   final JCheckBox showLabelsCheckBox = new JCheckBox("Labels");
   final JSpinner separationSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
 
-  public BarChartSubpanel() {
+  public BarChartSubpanel(final List<NumericAttr> rows) {
+    attrsTable = new NumericAttrsTable(rows, true);
     attrsTable.getModel().addTableModelListener(new TableModelListener() {
       public void tableChanged(TableModelEvent e) {
         BarChartSubpanel.this.firePropertyChange(CG_CHANGED, null, null);
@@ -82,7 +85,7 @@ class BarChartSubpanel extends ChartSubpanel {
     return buffer.toString();
   }
 
-  public void setup(final CyNetworkView networkView, final View<CyNode> nodeView) {
-    attrsTable.forCyTable(networkView.getModel().getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS));
+  public void refreshTable() {
+    ((NumericAttrsModel) attrsTable.getModel()).fireTableDataChanged();
   }
 }

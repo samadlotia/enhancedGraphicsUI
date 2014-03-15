@@ -1,5 +1,6 @@
 package org.gladstoneinstitutes.customgraphicsui.internal.chart;
 
+import java.util.List;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.FlowLayout;
@@ -26,10 +27,11 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 
 class LineChartSubpanel extends ChartSubpanel {
-  final NumericAttrsTable attrsTable = new NumericAttrsTable(true);
+  final NumericAttrsTable attrsTable;
   final JSpinner lineWidthSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
 
-  public LineChartSubpanel() {
+  public LineChartSubpanel(final List<NumericAttr> rows) {
+    attrsTable = new NumericAttrsTable(rows, true);
     attrsTable.getModel().addTableModelListener(new TableModelListener() {
       public void tableChanged(TableModelEvent e) {
         LineChartSubpanel.this.firePropertyChange(CG_CHANGED, null, null);
@@ -71,7 +73,7 @@ class LineChartSubpanel extends ChartSubpanel {
     return buffer.toString();
   }
 
-  public void setup(final CyNetworkView networkView, final View<CyNode> nodeView) {
-    attrsTable.forCyTable(networkView.getModel().getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS));
+  public void refreshTable() {
+    ((NumericAttrsModel) attrsTable.getModel()).fireTableDataChanged();
   }
 }

@@ -14,10 +14,11 @@ import org.cytoscape.model.CyTable;
 import org.gladstoneinstitutes.customgraphicsui.internal.util.Colors;
 
 class NumericAttrsModel extends AbstractTableModel {
-  final List<NumericAttr> rows = new ArrayList<NumericAttr>();
+  final List<NumericAttr> rows;
   final boolean showColorCol;
 
-  public NumericAttrsModel(final boolean showColorCol) {
+  public NumericAttrsModel(final List<NumericAttr> rows, final boolean showColorCol) {
+    this.rows = rows;
     this.showColorCol = showColorCol;
   }
 

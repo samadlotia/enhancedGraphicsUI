@@ -1,5 +1,6 @@
 package org.gladstoneinstitutes.customgraphicsui.internal.chart;
 
+import java.util.List;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.GridBagLayout;
@@ -44,15 +45,17 @@ import org.gladstoneinstitutes.customgraphicsui.internal.util.Strings;
 import org.gladstoneinstitutes.customgraphicsui.internal.util.ColorEditorPanel;
 
 class HeatStripSubpanel extends ChartSubpanel {
-  final NumericAttrsTable attrsTable = new NumericAttrsTable(false);
+  final NumericAttrsTable attrsTable;
   final JCheckBox showLabelsCheckBox = new JCheckBox("Labels");
   Color negativeColor = Color.CYAN;
   Color zeroColor     = Color.BLACK;
   Color positiveColor = Color.YELLOW;
   final JSpinner separationSpinner = new JSpinner(new SpinnerNumberModel(0, 0, 100, 1));
 
-  public HeatStripSubpanel() {
+  public HeatStripSubpanel(final List<NumericAttr> rows) {
     super.setLayout(new GridBagLayout());
+
+    attrsTable = new NumericAttrsTable(rows, false);
 
     attrsTable.getModel().addTableModelListener(new TableModelListener() {
       public void tableChanged(TableModelEvent e) {
@@ -169,8 +172,8 @@ class HeatStripSubpanel extends ChartSubpanel {
     return buffer.toString();
   }
 
-  public void setup(final CyNetworkView networkView, final View<CyNode> nodeView) {
-    attrsTable.forCyTable(networkView.getModel().getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS));
+  public void refreshTable() {
+    ((NumericAttrsModel) attrsTable.getModel()).fireTableDataChanged();
   }
 
   static final int COLOR_ICON_W = 20;
@@ -179,10 +182,10 @@ class HeatStripSubpanel extends ChartSubpanel {
     final BufferedImage img = new BufferedImage(COLOR_ICON_W, COLOR_ICON_H, BufferedImage.TYPE_INT_ARGB);
     final Graphics2D g2d = img.createGraphics();
     g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-    final int x = 1;
-    final int y = 1;
-    final int w = COLOR_ICON_W - 2;
-    final int h = COLOR_ICON_H - 2;
+    final int x = 0;
+    final int y = 0;
+    final int w = COLOR_ICON_W - 1;
+    final int h = COLOR_ICON_H - 1;
     g2d.setColor(color);
     g2d.fillRect(x, y, w, h);
     g2d.setColor(Color.BLACK);
