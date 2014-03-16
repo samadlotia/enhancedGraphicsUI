@@ -11,18 +11,19 @@ import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.application.swing.CySwingApplication;
 
+import org.gladstoneinstitutes.customgraphicsui.internal.gradient.GradientDialog;
 
-class AddCustomGraphicNodeViewTaskFactory implements NodeViewTaskFactory {
+class GradientNodeViewTaskFactory implements NodeViewTaskFactory {
   final CySwingApplication swingApp;
   final CustomGraphicsFactoryManager manager;
 
-  public AddCustomGraphicNodeViewTaskFactory(final CySwingApplication swingApp, final CustomGraphicsFactoryManager manager) {
+  public GradientNodeViewTaskFactory(final CySwingApplication swingApp, final CustomGraphicsFactoryManager manager) {
     this.swingApp = swingApp;
     this.manager = manager;
   }
 
   public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView networkView) {
-    return new TaskIterator(new AddCustomGraphicTask(swingApp, manager, networkView, nodeView));
+    return new TaskIterator(new GradientNodeViewTask(swingApp, manager, networkView, nodeView));
   }
 
   public boolean isReady(View<CyNode> nodeView, CyNetworkView networkView) {
@@ -30,13 +31,13 @@ class AddCustomGraphicNodeViewTaskFactory implements NodeViewTaskFactory {
   }
 }
 
-class AddCustomGraphicTask implements Task {
+class GradientNodeViewTask implements Task {
   final CySwingApplication swingApp;
   final CustomGraphicsFactoryManager manager;
   final CyNetworkView networkView;
   final View<CyNode> nodeView;
 
-  public AddCustomGraphicTask(final CySwingApplication swingApp, final CustomGraphicsFactoryManager manager, final CyNetworkView networkView, final View<CyNode> nodeView) { 
+  public GradientNodeViewTask(final CySwingApplication swingApp, final CustomGraphicsFactoryManager manager, final CyNetworkView networkView, final View<CyNode> nodeView) { 
     this.swingApp = swingApp;
     this.manager = manager;
     this.networkView = networkView;
@@ -44,8 +45,8 @@ class AddCustomGraphicTask implements Task {
   }
 
   public void run(TaskMonitor monitor) {
-    final MainDialog d = new MainDialog(swingApp.getJFrame(), manager);
-    d.setup(networkView, nodeView);
+    final GradientDialog d = new GradientDialog(swingApp.getJFrame(), manager);
+    //d.setup(networkView, nodeView);
     d.pack();
     d.setVisible(true);
   }

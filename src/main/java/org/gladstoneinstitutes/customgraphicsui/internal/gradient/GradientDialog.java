@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import java.awt.Color;
+import java.awt.Frame;
 import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.Dimension;
@@ -22,6 +23,7 @@ import java.awt.event.FocusEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 
+import javax.swing.JDialog;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -43,14 +45,15 @@ import org.gladstoneinstitutes.customgraphicsui.internal.util.EasyGBC;
 import org.gladstoneinstitutes.customgraphicsui.internal.util.ColorEditorPanel;
 import org.gladstoneinstitutes.customgraphicsui.internal.CustomGraphicsFactoryManager;
 
-public class GradientPanel extends JPanel {
+public class GradientDialog extends JDialog {
   final CustomGraphicsFactoryManager manager;
   final GradientEditor editor;
   final GradientOrientationEditor gradientPositionEditor;
   final ColorEditorPanel colorEditorPanel;
   final AnchorPositionPanel anchorPositionPanel;
 
-  public GradientPanel(final CustomGraphicsFactoryManager manager) {
+  public GradientDialog(final Frame parent, final CustomGraphicsFactoryManager manager) {
+    super(parent, "Node Gradient", false);
     this.manager = manager;
     this.editor = new GradientEditor();
     this.gradientPositionEditor = new GradientOrientationEditor(editor, manager);

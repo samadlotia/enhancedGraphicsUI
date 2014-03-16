@@ -26,8 +26,12 @@ public class CyActivator extends AbstractCyActivator {
     final CustomGraphicsFactoryManager manager = new CustomGraphicsFactoryManager();
     super.registerServiceListener(bc, manager, "addFactory", "removeFactory", CyCustomGraphicsFactory.class);
     
-    super.registerService(bc, new AddCustomGraphicNodeViewTaskFactory(swingApp, manager), NodeViewTaskFactory.class, ezProps(
-      ServiceProperties.TITLE, "Add Custom Graphic",
+    super.registerService(bc, new ChartNodeViewTaskFactory(swingApp, manager), NodeViewTaskFactory.class, ezProps(
+      ServiceProperties.TITLE, "Chart...",
+      ServiceProperties.PREFERRED_MENU, ServiceProperties.APPS_MENU
+      ));
+    super.registerService(bc, new GradientNodeViewTaskFactory(swingApp, manager), NodeViewTaskFactory.class, ezProps(
+      ServiceProperties.TITLE, "Gradient...",
       ServiceProperties.PREFERRED_MENU, ServiceProperties.APPS_MENU
       ));
     System.out.println((new java.util.Date()).toString() + "  enhancedGraphicsUI started");

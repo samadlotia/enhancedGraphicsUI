@@ -10,6 +10,7 @@ import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.CardLayout;
 import java.awt.Font;
+import java.awt.Frame;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -25,6 +26,7 @@ import java.awt.event.ActionEvent;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 
+import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JComponent;
@@ -54,14 +56,15 @@ import org.cytoscape.view.presentation.customgraphics.PaintedShape;
 import org.gladstoneinstitutes.customgraphicsui.internal.CustomGraphicsFactoryManager;
 import org.gladstoneinstitutes.customgraphicsui.internal.util.EasyGBC;
 
-public class ChartPanel extends JPanel {
+public class ChartDialog extends JDialog {
   final ChartPreview preview;
   final List<NumericAttr> numericAttrs = new ArrayList<NumericAttr>();
   final Map<String,ChartSubpanel> subpanels = new HashMap<String,ChartSubpanel>();
   ChartSubpanel currentSubpanel = null;
 
-  public ChartPanel(final CustomGraphicsFactoryManager cgMgr) {
-    super(new GridBagLayout());
+  public ChartDialog(final Frame parent, final CustomGraphicsFactoryManager cgMgr) {
+    super(parent, "Node Chart", false);
+    super.setLayout(new GridBagLayout());
     preview = new ChartPreview(cgMgr);
 
     final JPanel typePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
