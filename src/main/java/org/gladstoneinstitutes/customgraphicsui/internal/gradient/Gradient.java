@@ -130,7 +130,7 @@ public class Gradient {
    * There must be at least two stops.
    */
   public Gradient(final String str) {
-    final String[] pieces = str.trim().split("|");
+    final String[] pieces = str.trim().split("\\|");
     if (pieces.length < 2)
       throw new IllegalArgumentException("Must be at least two stops: " + str);
     for (final String piece : pieces) {

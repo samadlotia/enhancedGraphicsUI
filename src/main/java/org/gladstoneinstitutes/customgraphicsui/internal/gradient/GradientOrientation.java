@@ -55,8 +55,8 @@ public class GradientOrientation extends Line2D.Float {
       try {
         final float radius = java.lang.Float.parseFloat(radiusStr);
         final double angle = Math.atan2(y1, x1);
-        super.x2 = (float) (radius * Math.cos(angle));
-        super.y2 = (float) (radius * Math.sin(angle));
+        super.x2 = super.x1 + (float) (radius * Math.cos(angle));
+        super.y2 = super.y1 + (float) (radius * Math.sin(angle));
       } catch (NumberFormatException e) {
         throw new IllegalArgumentException("radius must be a valid float");
       }

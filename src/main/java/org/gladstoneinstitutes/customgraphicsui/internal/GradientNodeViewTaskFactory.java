@@ -46,7 +46,8 @@ class GradientNodeViewTask implements Task {
 
   public void run(TaskMonitor monitor) {
     final GradientDialog d = new GradientDialog(swingApp.getJFrame(), manager);
-    //d.setup(networkView, nodeView);
+    final String cgString = networkView.getModel().getRow(nodeView.getModel(), CyNetwork.DEFAULT_ATTRS).get("Gradient", String.class);
+    d.setupWithCgString(cgString);
     d.pack();
     d.setVisible(true);
   }

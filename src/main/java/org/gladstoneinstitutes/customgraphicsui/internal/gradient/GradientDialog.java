@@ -2,6 +2,8 @@ package org.gladstoneinstitutes.customgraphicsui.internal.gradient;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 import java.awt.Color;
 import java.awt.Frame;
@@ -43,6 +45,7 @@ import java.beans.PropertyChangeEvent;
 
 import org.gladstoneinstitutes.customgraphicsui.internal.util.EasyGBC;
 import org.gladstoneinstitutes.customgraphicsui.internal.util.ColorEditorPanel;
+import org.gladstoneinstitutes.customgraphicsui.internal.util.Strings;
 import org.gladstoneinstitutes.customgraphicsui.internal.CustomGraphicsFactoryManager;
 
 public class GradientDialog extends JDialog {
@@ -51,6 +54,7 @@ public class GradientDialog extends JDialog {
   final GradientOrientationEditor gradientPositionEditor;
   final ColorEditorPanel colorEditorPanel;
   final AnchorPositionPanel anchorPositionPanel;
+  final Map<GradientOrientation.Type,JRadioButton> typeButtons = new HashMap<GradientOrientation.Type,JRadioButton>();
 
   public GradientDialog(final Frame parent, final CustomGraphicsFactoryManager manager) {
     super(parent, "Node Gradient", false);
@@ -122,6 +126,7 @@ public class GradientDialog extends JDialog {
       });
       if (type == gradientPositionEditor.getGradientOrientation().getType())
         typeButton.setSelected(true);
+      typeButtons.put(type, typeButton);
     }
 
     super.setLayout(new GridBagLayout());
@@ -130,6 +135,27 @@ public class GradientDialog extends JDialog {
     super.add(editor, c.down().right().expand(0.0, 0.0).insets(10, 0, 0, 10));
     super.add(anchorPanel, c.anchor("nw").down().right().noExpand().insets(10, 0, 0, 10));
   }	
+
+  public void setupWithCgString(final String cg) {
+    if (cg == null)
+      return;
+    final Map<String,String> args = Strings.extractArgMap(cg);
+    if (args == null)
+      return;
+    try {
+      final GradientOrientation orientation = new GradientOrientation(args);
+      gradientPositionEditor.setGradientOrientation(orientation);
+      typeButtons.get(orientation.getType()).setSelected(true);
+
+      final String stoplist = args.get("stoplist");
+      if (stoplist == null || stoplist.length() == 0)
+        return;
+      final Gradient gradient = new Gradient(stoplist);
+      editor.setGradient(gradient);
+    } catch (IllegalArgumentException e) {
+      //e.printStackTrace();
+    }
+  }
 }
 
 class AnchorPositionPanel extends JPanel {

@@ -35,7 +35,21 @@ public class Strings {
       c.getAlpha());
   }
 
-  public static Map<String,String> toArgMap(String input) {
+  public static String extractCgType(final String input) {
+    final int i = input.indexOf(':');
+    if (i < 0)
+      return null;
+    return input.substring(0, i).trim();
+  }
+
+  public static Map<String,String> extractArgMap(final String input) {
+    final int i = input.indexOf(':');
+    if (i < 0)
+      return null;
+    return toArgMap(input.substring(i + 1));
+  }
+
+  private static Map<String,String> toArgMap(String input) {
     Map<String,String> settings = new HashMap<String,String>();
 
     StringReader reader = new StringReader(input);
